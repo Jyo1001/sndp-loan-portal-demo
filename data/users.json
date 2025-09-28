@@ -1,64 +1,194 @@
 {
   "users": [
     {
-      "username": "manager",
-      "role": "manager",
-      "branch": "kalady",
-      "permissions": ["profile:read", "accounts:read", "accounts:write", "audit:read"],
-      "full_name": "SNDP Manager",
-      "dob": "1970-01-01",
-      "address": "SNDP Office, Kalady, Kerala",
-      "phone": "+91 98765 43210",
-      "email": "manager@example.com",
-      "photo": "data/profile_photos/manager.svg",
-      "account_excel": "data/accounts/manager_account.json",
-      "salt": "4d2fb81fdad07588",
-      "password_hash": "90798c8b840a46d9b3453ac21660d87cf3d042514a28181485f1f5afec844043"
-    },
-    {
-      "username": "jyo",
+      "username": "sanoj1",
       "role": "member",
-      "branch": "kalady",
-      "permissions": ["profile:read", "profile:update", "accounts:read"],
-      "full_name": "Jyo Sudhakaran",
-      "dob": "1995-08-06",
-      "address": "Calgary, Alberta, Canada",
-      "phone": "+1 403 000 0000",
-      "email": "jyo@example.com",
+      "branch": "TVM-Kazhakuttom",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Sanoj Kumar",
+      "dob": "1981-01-24",
+      "address": "Kazhakuttom, Thiruvananthapuram, Kerala 695582",
+      "phone": "+918362950628",
+      "email": "sanoj1@example.in",
       "photo": "data/profile_photos/jyo.svg",
-      "account_excel": "data/accounts/jyo_account.json",
-      "salt": "7868bc771e3390b1",
-      "password_hash": "4f4cbbc029611633502e908c8bf5400d039f39daf467cd0b633485765c565e21"
+      "account_excel": "data/accounts/sanoj1_account.json",
+      "salt": "c7711336687ec90e",
+      "password_hash": "b93891b45c6f5dceb35a228c9be89af0ad46e76f6d7f8814e5d35950c2fcab48"
     },
     {
-      "username": "kochi_mgr",
-      "role": "manager",
-      "branch": "kochi",
-      "permissions": ["profile:read", "accounts:read", "audit:read"],
-      "full_name": "Anita Varghese",
-      "dob": "1985-04-14",
-      "address": "Kochi Chapter Office, Kochi, Kerala",
-      "phone": "+91 91234 50000",
-      "email": "anita@example.com",
-      "photo": "data/profile_photos/manager.svg",
-      "account_excel": "data/accounts/kochi_mgr_account.json",
-      "salt": "05dbb45da8a0e0d4",
-      "password_hash": "efea82193b976c07c011ed0f54c8d66c88e74fc394bd4e7eb075ddbf5925912a"
-    },
-    {
-      "username": "mariya",
+      "username": "reshma2",
       "role": "member",
-      "branch": "kochi",
-      "permissions": ["profile:read", "profile:update", "accounts:read"],
-      "full_name": "Mariya Paul",
-      "dob": "1992-02-11",
-      "address": "Cheranelloor, Kochi",
-      "phone": "+91 98950 12345",
-      "email": "mariya@example.com",
+      "branch": "EKM-Kaloor",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Reshma B",
+      "dob": "1991-04-15",
+      "address": "Kaloor, Kochi, Kerala 682017",
+      "phone": "+917398704996",
+      "email": "reshma2@example.in",
       "photo": "data/profile_photos/jyo.svg",
-      "account_excel": "data/accounts/mariya_account.json",
-      "salt": "bb0da877c4ed4bc1",
-      "password_hash": "911c31a37d4d2687072c45e049cd7bb214793f11d4390e0d7438fbf4424ba161"
+      "account_excel": "data/accounts/reshma2_account.json",
+      "salt": "58ba029282f5b973",
+      "password_hash": "bd756745917a2ff96a5fa8f053dd81ae7a35316f36de98cbec91069cd15d997c"
+    },
+    {
+      "username": "jithin3",
+      "role": "member",
+      "branch": "KLM-Kollam-Central",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Jithin Das",
+      "dob": "1981-07-03",
+      "address": "Chinnakada, Kollam, Kerala 691001",
+      "phone": "+917414797776",
+      "email": "jithin3@demo.local",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/jithin3_account.json",
+      "salt": "7aa3635c3e09ea3c",
+      "password_hash": "e95350012e3f7a391db208dfedfae9b1155bef611de725350b2bcd18e56ecaf6"
+    },
+    {
+      "username": "maya4",
+      "role": "member",
+      "branch": "PKD-Palakkad-Town",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Maya Lekshmi",
+      "dob": "1989-06-07",
+      "address": "Stadium Bypass, Palakkad, Kerala 678001",
+      "phone": "+917386665249",
+      "email": "maya4@demo.local",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/maya4_account.json",
+      "salt": "d018dabe22a377e0",
+      "password_hash": "d451e614d6152d0ab3f7efbb6e026fe842ee844c9622d1fca4f8c99776856a7c"
+    },
+    {
+      "username": "ajith5",
+      "role": "member",
+      "branch": "KNR-Kannur-South",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Ajith Nair",
+      "dob": "1979-06-13",
+      "address": "Thalassery Road, Kannur, Kerala 670002",
+      "phone": "+918171069472",
+      "email": "ajith5@example.in",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/ajith5_account.json",
+      "salt": "53ef187d09250597",
+      "password_hash": "61e686348960304907210731ad5d1289437eadbbcf9053b6b224e3929e57c8cc"
+    },
+    {
+      "username": "aswathy6",
+      "role": "member",
+      "branch": "KTY-Kottayam-East",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Aswathy S",
+      "dob": "1990-06-08",
+      "address": "Baker Junction, Kottayam, Kerala 686001",
+      "phone": "+919647099690",
+      "email": "aswathy6@mail.test",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/aswathy6_account.json",
+      "salt": "ef9d18cc232f56e7",
+      "password_hash": "cb1404fe8b5b2f6ea764601e4fef28fcb74dc10097b39662b88a3ae18fda1508"
+    },
+    {
+      "username": "rahul7",
+      "role": "member",
+      "branch": "MLP-Malappuram-City",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Rahul R",
+      "dob": "1981-11-18",
+      "address": "Up Hill, Malappuram, Kerala 676505",
+      "phone": "+918925276600",
+      "email": "rahul7@demo.local",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/rahul7_account.json",
+      "salt": "7aab4b28923c9a9b",
+      "password_hash": "3a379fcea64e686ba89568c642907ba4aed3918a09112c4c5d3c6fe3f9b1ef06"
+    },
+    {
+      "username": "nayana8",
+      "role": "member",
+      "branch": "TSR-Thrissur-Round",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Nayana P",
+      "dob": "1994-10-07",
+      "address": "Swaraj Round, Thrissur, Kerala 680001",
+      "phone": "+919501486939",
+      "email": "nayana8@example.in",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/nayana8_account.json",
+      "salt": "210e1697a99812ba",
+      "password_hash": "c0acd96b55a4ab79a76749472c7ad4fcf8e6812d51983aee7a4b71523c0ba5df"
+    },
+    {
+      "username": "dileep9",
+      "role": "member",
+      "branch": "ALP-Alappuzha-North",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Dileep Krishnan",
+      "dob": "1993-02-25",
+      "address": "Vazhicherry, Alappuzha, Kerala 688001",
+      "phone": "+917922308461",
+      "email": "dileep9@example.in",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/dileep9_account.json",
+      "salt": "5c3a04b738ef56d0",
+      "password_hash": "04f41b5e7e7de15a49255e332d48a054c0de8a2e4a0d6fd8a5492686f68ad0d6"
+    },
+    {
+      "username": "fathima10",
+      "role": "member",
+      "branch": "PTA-Pathanamthitta",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read"
+      ],
+      "full_name": "Fathima Noor",
+      "dob": "1989-08-17",
+      "address": "Adoor, Pathanamthitta, Kerala 691523",
+      "phone": "+918229927269",
+      "email": "fathima10@example.in",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/fathima10_account.json",
+      "salt": "89c516664499969f",
+      "password_hash": "2bfa97a01dc58f20421c6bd51aa4a8e59402904b6bf00ce02d17f66e09b81a4c"
     }
   ]
 }
