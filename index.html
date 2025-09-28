@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SNDP Loan Portal — Login (Demo)</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <meta name="color-scheme" content="dark light"/>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <div class="title">SNDP Loan Portal — Demo</div>
+        <div class="sub">Static, GitHub Pages–friendly prototype. <span class="tag">Do not use for real data</span></div>
+      </div>
+      <a class="btn ghost" href="README.html">Help</a>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>Login</h3>
+        <p class="small">Use the demo accounts below to sign in. All verification happens in your browser.</p>
+        <form id="loginForm">
+          <label>Username</label>
+          <input class="input" id="username" autocomplete="username" required/>
+          <label>Password</label>
+          <input class="input" id="password" type="password" autocomplete="current-password" required/>
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+            <button class="btn" type="submit">Sign in</button>
+            <span id="loginMsg" class="small"></span>
+          </div>
+        </form>
+      </div>
+      <div class="card">
+        <h3>Demo Credentials</h3>
+        <ul>
+          <li><b>Manager</b>: <code>manager / demo123</code></li>
+          <li><b>Member</b>: <code>jyo / demo123</code></li>
+        </ul>
+        <p class="small">You can edit users and passwords in <code>data/users.json</code>. Replace salts and hashes using the README steps.</p>
+        <p class="small">This prototype cannot write back to the server. To save changes, export files and commit them to GitHub.</p>
+      </div>
+    </div>
+    <footer>© SNDP Demo • Built for GitHub Pages • No server required</footer>
+  </div>
+
+  <script>
+  async function sha256Hex(str){
+    const enc = new TextEncoder().encode(str);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    const bytes = Array.from(new Uint8Array(buf));
+    return bytes.map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  async function login(ev){
+    ev.preventDefault();
+    const u = document.getElementById('username').value.trim();
+    const p = document.getElementById('password').value;
+    const msg = document.getElementById('loginMsg');
+    msg.textContent = 'Checking...';
+    try{
+      const res = await fetch('data/users.json');
+      const db = await res.json();
+      const rec = db.users.find(x => x.username === u);
+      if(!rec){ msg.textContent = 'User not found'; return; }
+      const hash = await sha256Hex(rec.salt + p);
+      if(hash !== rec.password_hash){ msg.textContent = 'Invalid password'; return; }
+      // Save session
+      localStorage.setItem('sndp_session', JSON.stringify({username: u, role: rec.role, ts: Date.now()}));
+      location.href = 'app.html';
+    }catch(e){
+      console.error(e);
+      msg.textContent = 'Error loading users.json';
+    }
+  }
+  document.getElementById('loginForm').addEventListener('submit', login);
+  </script>
+</body>
+</html>

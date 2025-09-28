@@ -1,0 +1,93 @@
+# SNDP Loan Portal — Demo (Static, GitHub Pages)
+
+**⚠️ Prototype only — do not use with real personal/financial data.**  
+This is a static, front‑end–only demo that works on GitHub Pages (no server).  
+Logins are verified **in the browser** using salted SHA‑256 (still not secure for production).
+
+---
+
+## Quick start (for GitHub Pages)
+
+1. Download the ZIP from ChatGPT and extract it.
+2. Create a new GitHub repo, e.g. `sndp-loan-portal-demo`.
+3. Upload the folder contents to the repo root.
+4. Enable **GitHub Pages** (Settings → Pages → Deploy from branch → `main` → `/root`).
+5. Visit your Pages URL (wait a minute after first deploy).
+6. Sign in with:
+   - **manager / demo123**
+   - **jyo / demo123**
+
+---
+
+## What’s included
+
+- `index.html` — Login page
+- `app.html` — Portal (Profile, Account, Manager)
+- `styles.css` — Simple dark theme, mobile friendly
+- `data/users.json` — Users, roles, salted password hashes, profile + Excel path
+- `data/accounts/*.xlsx` — One Excel **account book per person**
+- `data/profile_photos/*.svg` — Avatars
+- `README.md` + `README.html` — This help doc
+
+The portal reads each person’s Excel file with [SheetJS](https://sheetjs.com/) in the browser and renders an account table with totals. Users can **export** a new Excel snapshot (client‑side) but **cannot save back to the server** (no backend).
+
+---
+
+## Add a new member
+
+1. Copy `data/accounts/jyo_account.xlsx` → `data/accounts/<username>_account.xlsx`.
+2. Edit `data/users.json` and add an object like:
+
+```json
+{
+  "username": "anu",
+  "role": "member",
+  "full_name": "Anu Example",
+  "dob": "1998-05-10",
+  "address": "Kalady, Kerala",
+  "phone": "+91 9xxx",
+  "email": "anu@example.com",
+  "photo": "data/profile_photos/manager.svg",
+  "account_excel": "data/accounts/anu_account.xlsx",
+  "salt": "<GENERATE>",
+  "password_hash": "<SHA256(salt + password)>"
+}
+```
+
+3. Commit the changes. The new user can now sign in.
+
+### Generate salt + password hash
+
+- Pick a random hex salt, e.g. `python -c "import secrets;print(secrets.token_hex(8))"`  
+- Compute SHA‑256 of `salt + password` and paste the hex into `password_hash`.  
+  In this ZIP, we used:
+  - manager: salt = `4d2fb81fdad07588`
+  - jyo: salt = `7868bc771e3390b1`
+
+> ⚠️ These demo secrets are public. Change them for any real use.
+
+---
+
+## How to work around “no server”
+
+- **To update data**: open in the portal, click **Export** (Excel), then commit the new file to GitHub.
+- **To accept new profiles**: ask members to export their profile Excel and send it to the manager for commit.
+- **To prototype “real” saving** later: attach a backend (e.g. Firebase Auth + Firestore, Supabase, or a tiny Node/Express API) and replace `fetch('data/users.json')` with API calls.
+
+---
+
+## Roadmap ideas
+
+- Proper authentication (password reset, email/OTP, role‑based routes)
+- Backend database (member profiles and accounts stored centrally)
+- Audit log for changes; monthly interest auto‑calculation
+- Attachments (receipts), photo capture on mobile
+- Multi‑branch support (units/chapters), per‑branch managers
+- Download monthly statements as PDF
+- Malayalam/English translation, INR formatting
+
+---
+
+## Security & privacy note
+
+This demo places some configuration in a public repo and verifies passwords inside the browser. **This is not secure** for real deployments. For production you must add a backend with real authentication and access controls.

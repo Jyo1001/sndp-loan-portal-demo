@@ -1,0 +1,30 @@
+{
+  "users": [
+    {
+      "username": "manager",
+      "role": "manager",
+      "full_name": "SNDP Manager",
+      "dob": "1970-01-01",
+      "address": "SNDP Office, Kalady, Kerala",
+      "phone": "+91 98765 43210",
+      "email": "manager@example.com",
+      "photo": "data/profile_photos/manager.svg",
+      "account_excel": "data/accounts/manager_account.xlsx",
+      "salt": "4d2fb81fdad07588",
+      "password_hash": "90798c8b840a46d9b3453ac21660d87cf3d042514a28181485f1f5afec844043"
+    },
+    {
+      "username": "jyo",
+      "role": "member",
+      "full_name": "Jyo Sudhakaran",
+      "dob": "1995-08-06",
+      "address": "Calgary, Alberta, Canada",
+      "phone": "+1 403 000 0000",
+      "email": "jyo@example.com",
+      "photo": "data/profile_photos/jyo.svg",
+      "account_excel": "data/accounts/jyo_account.xlsx",
+      "salt": "7868bc771e3390b1",
+      "password_hash": "4f4cbbc029611633502e908c8bf5400d039f39daf467cd0b633485765c565e21"
+    }
+  ]
+}

@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SNDP Loan Portal — App (Demo)</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <meta name="color-scheme" content="dark light"/>
+  <!-- SheetJS to read/write Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div>
+        <div class="title">SNDP Loan Portal</div>
+        <div class="sub">Welcome, <span id="who"></span></div>
+      </div>
+      <div class="nav">
+        <a href="#" onclick="showTab('profile');return false;">Profile</a>
+        <a href="#" onclick="showTab('account');return false;">Account</a>
+        <a id="mgrTab" class="hidden" href="#" onclick="showTab('manager');return false;">Manager</a>
+        <a href="#" onclick="logout();return false;">Logout</a>
+      </div>
+    </div>
+
+    <div id="profile" class="card">
+      <h3>My Profile</h3>
+      <div class="grid two">
+        <div>
+          <img id="avatar" class="avatar" src="" alt="avatar"/>
+          <div style="margin-top:8px">
+            <label class="small">Upload new photo (stored only in your browser for demo)</label>
+            <input type="file" accept="image/*" onchange="handlePhoto(this)"/>
+          </div>
+        </div>
+        <div class="grid two">
+          <div><label>Full Name</label><input class="input" id="full_name"/></div>
+          <div><label>DOB</label><input class="input" id="dob" type="date"/></div>
+          <div><label>Address</label><input class="input" id="address"/></div>
+          <div><label>Phone</label><input class="input" id="phone"/></div>
+          <div><label>Email</label><input class="input" id="email"/></div>
+        </div>
+      </div>
+      <div style="margin-top:12px;display:flex;gap:8px">
+        <button class="btn" onclick="saveProfileLocal()">Save to this browser</button>
+        <button class="btn ghost" onclick="exportProfileExcel()">Export Profile.xlsx</button>
+      </div>
+      <p class="small">This demo cannot save to the server. Use export and then commit the file to GitHub.</p>
+    </div>
+
+    <div id="account" class="card hidden">
+      <h3>My Account Book</h3>
+      <div class="grid two">
+        <div>
+          <div class="small">Current Account Excel: <code id="acctPath"></code></div>
+          <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap">
+            <a class="btn ghost" id="downloadLink" href="#" download>Download Original</a>
+            <button class="btn" onclick="exportAccountExcel()">Export Current View.xlsx</button>
+            <label class="btn ghost" for="upExcel" style="cursor:pointer">Open Excel from my computer</label>
+            <input id="upExcel" type="file" accept=".xlsx,.xls" class="hidden" onchange="openLocalExcel(this)"/>
+          </div>
+        </div>
+        <div>
+          <div class="grid three">
+            <div class="card"><div class="small">Total Loaned</div><div id="kLoaned" style="font-size:18px;font-weight:700"></div></div>
+            <div class="card"><div class="small">Total Repaid</div><div id="kRepaid" style="font-size:18px;font-weight:700"></div></div>
+            <div class="card"><div class="small">Balance Owed</div><div id="kBalance" style="font-size:18px;font-weight:700"></div></div>
+          </div>
+        </div>
+      </div>
+      <div style="overflow:auto;margin-top:12px">
+        <table class="table" id="acctTable">
+          <thead><tr><th>Date</th><th>Description</th><th>Type</th><th>Amount</th><th>Balance</th><th>Notes</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="manager" class="card hidden">
+      <h3>Manager — All Members</h3>
+      <div id="usersList" class="grid two"></div>
+      <div class="card" style="margin-top:12px">
+        <h4>How to add a new member (manual, demo)</h4>
+        <ol class="small">
+          <li>Copy <code>data/accounts/jyo_account.xlsx</code> and rename to <code>&lt;username&gt;_account.xlsx</code>.</li>
+          <li>Edit <code>data/users.json</code> to add a new user object. Generate a new salt and SHA-256 hash for their password (see README).</li>
+          <li>Commit changes to GitHub. The new user can now sign in.</li>
+        </ol>
+      </div>
+    </div>
+
+    <footer>© SNDP Demo • Client-side only • For evaluation purposes</footer>
+  </div>
+
+  <script>
+  let SESSION = null, USERS = null, ME = null;
+
+  function showTab(id){
+    for(const x of ['profile','account','manager']){
+      document.getElementById(x).classList.add('hidden');
+    }
+    document.getElementById(id).classList.remove('hidden');
+  }
+  function logout(){
+    localStorage.removeItem('sndp_session');
+    location.href = 'index.html';
+  }
+
+  function readLocalProfile(){
+    try{ return JSON.parse(localStorage.getItem('profile_'+ME.username) || 'null'); }catch{ return null; }
+  }
+  function saveProfileLocal(){
+    const p = {
+      full_name: document.getElementById('full_name').value,
+      dob: document.getElementById('dob').value,
+      address: document.getElementById('address').value,
+      phone: document.getElementById('phone').value,
+      email: document.getElementById('email').value,
+      photoDataUrl: document.getElementById('avatar').src.startsWith('data:') ? document.getElementById('avatar').src : null
+    };
+    localStorage.setItem('profile_'+ME.username, JSON.stringify(p));
+    alert('Saved to this browser.');
+  }
+  function handlePhoto(inp){
+    const file = inp.files[0]; if(!file) return;
+    const r = new FileReader();
+    r.onload = () => { document.getElementById('avatar').src = r.result; };
+    r.readAsDataURL(file);
+  }
+  function fillProfile(){
+    const p = readLocalProfile() || ME;
+    document.getElementById('full_name').value = p.full_name || '';
+    document.getElementById('dob').value = (p.dob||'').slice(0,10);
+    document.getElementById('address').value = p.address || '';
+    document.getElementById('phone').value = p.phone || '';
+    document.getElementById('email').value = p.email || '';
+    document.getElementById('avatar').src = (p.photoDataUrl ? p.photoDataUrl : (ME.photo || 'data/profile_photos/manager.svg'));
+  }
+
+  function fmtMoney(n){ return new Intl.NumberFormat(undefined,{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n); }
+
+  async function loadAccount(path){
+    document.getElementById('acctPath').textContent = path;
+    document.getElementById('downloadLink').href = path;
+    const res = await fetch(path);
+    const buf = await res.arrayBuffer();
+    const wb = XLSX.read(buf, {type: 'array'});
+    const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+    const tbody = document.querySelector('#acctTable tbody');
+    tbody.innerHTML = '';
+    let totalLoaned=0, totalRepaid=0, bal=0;
+    for(const r of rows){
+      const amt = parseFloat(r.Amount||0);
+      bal += amt;
+      if(amt>0) totalLoaned+=amt; else totalRepaid+=-amt;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `<td>${r.Date||''}</td><td>${r.Description||''}</td><td>${r.Type||''}</td>
+                      <td>${amt.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+                      <td>${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+                      <td>${r.Notes||''}</td>`;
+      tbody.appendChild(tr);
+    }
+    document.getElementById('kLoaned').textContent = fmtMoney(totalLoaned);
+    document.getElementById('kRepaid').textContent = fmtMoney(totalRepaid);
+    document.getElementById('kBalance').textContent = fmtMoney(bal);
+    // keep in memory for export
+    window._acctRows = rows.map((r,i)=>({...r, Balance: undefined}));
+  }
+
+  function exportAccountExcel(){
+    const rows = window._acctRows || [];
+    const ws = XLSX.utils.json_to_sheet(rows);
+    // recompute running balance in JS and add a Balance column
+    let running=0;
+    const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
+    const headers = data[0]; 
+    let balIdx = headers.indexOf('Balance');
+    if(balIdx<0){ headers.push('Balance'); balIdx = headers.length-1; }
+    for(let i=1;i<data.length;i++){
+      const amt = parseFloat(data[i][headers.indexOf('Amount')]||0);
+      running += amt;
+      data[i][balIdx] = running;
+    }
+    const newWs = XLSX.utils.aoa_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, newWs, 'Account');
+    const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    const blob = new Blob([wbout], {type:'application/octet-stream'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${ME.username}_account_export.xlsx`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  function openLocalExcel(inp){
+    const file = inp.files[0]; if(!file) return;
+    const r = new FileReader();
+    r.onload = async () => {
+      const wb = XLSX.read(r.result, {type:'array'});
+      const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+      window._acctRows = rows;
+      // Render
+      const tbody = document.querySelector('#acctTable tbody');
+      tbody.innerHTML = '';
+      let totalLoaned=0, totalRepaid=0, bal=0;
+      for(const r of rows){
+        const amt = parseFloat(r.Amount||0);
+        bal += amt;
+        if(amt>0) totalLoaned+=amt; else totalRepaid+=-amt;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.Date||''}</td><td>${r.Description||''}</td><td>${r.Type||''}</td>
+                        <td>${amt.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+                        <td>${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
+                        <td>${r.Notes||''}</td>`;
+        tbody.appendChild(tr);
+      }
+      document.getElementById('kLoaned').textContent = fmtMoney(totalLoaned);
+      document.getElementById('kRepaid').textContent = fmtMoney(totalRepaid);
+      document.getElementById('kBalance').textContent = fmtMoney(bal);
+    };
+    r.readAsArrayBuffer(file);
+  }
+
+  async function init(){
+    const s = localStorage.getItem('sndp_session');
+    if(!s){ location.href = 'index.html'; return; }
+    SESSION = JSON.parse(s);
+    const res = await fetch('data/users.json');
+    USERS = await res.json();
+    const me = USERS.users.find(u => u.username === SESSION.username);
+    if(!me){ logout(); return; }
+    ME = me;
+    document.getElementById('who').textContent = me.full_name + ' (' + me.role + ')';
+    if(me.role === 'manager'){ document.getElementById('mgrTab').classList.remove('hidden'); }
+    // Fill profile
+    fillProfile();
+    // Load account
+    showTab('account');
+    await loadAccount(me.account_excel);
+    // Manager list
+    if(me.role === 'manager'){
+      const wrap = document.getElementById('usersList');
+      wrap.innerHTML = '';
+      for(const u of USERS.users){
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = \`
+          <div style="display:flex;gap:12px;align-items:center">
+            <img class="avatar" src="\${u.photo}" alt="avatar"/>
+            <div style="flex:1">
+              <div style="font-weight:700">\${u.full_name} — <span class="tag">\${u.role}</span></div>
+              <div class="small">\${u.username} • \${u.email} • \${u.phone}</div>
+              <div class="small">Excel: <code>\${u.account_excel}</code></div>
+            </div>
+            <button class="btn" onclick="loadAccount('\${u.account_excel}');showTab('account');">Open Account</button>
+          </div>
+        \`;
+        wrap.appendChild(card);
+      }
+    }
+  }
+  window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>
