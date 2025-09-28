@@ -14,8 +14,23 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 4. Enable **GitHub Pages** (Settings → Pages → Deploy from branch → `main` → `/root`).
 5. Visit your Pages URL (wait a minute after first deploy).
 6. Sign in with:
-   - **manager / demo123**
-   - **jyo / demo123**
+   - **manager / demo123** (Kalady branch manager)
+   - **kochi_mgr / demo123** (Kochi branch manager)
+   - **jyo / demo123** (Kalady member)
+   - **mariya / demo123** (Kochi member)
+
+---
+
+## What's new in this build
+
+- Password reset flow with OTP delivery (displayed on-screen for the offline demo) and per-user password overrides stored locally.
+- Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
+- Automatic monthly interest projections (1% demo rate) plus PDF statement export for any month.
+- Receipt/attachment capture with mobile camera support; files live in local storage for evaluation.
+- Multi-branch data model (`data/branches.json`) with per-branch account books and managers.
+- Fresh JSON account datasets for each demo user plus a reusable `sample_account.json` you can clone for new members. The UI gene
+rates downloadable `.zip` files containing Excel workbooks on demand.
+- Local audit log viewer showing logins, exports, password resets, and document actions.
 
 ---
 
@@ -24,18 +39,19 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 - `index.html` — Login page
 - `app.html` — Portal (Profile, Account, Manager)
 - `styles.css` — Simple dark theme, mobile friendly
-- `data/users.json` — Users, roles, salted password hashes, profile + Excel path
-- `data/accounts/*.xlsx` — One Excel **account book per person**
+- `data/users.json` — Users, roles, salted password hashes, profile + account dataset path
+- `data/branches.json` — Branch/unit metadata for managers
+- `data/accounts/*.json` — One account dataset per person (download as Excel `.zip` from the portal)
 - `data/profile_photos/*.svg` — Avatars
 - `README.md` + `README.html` — This help doc
 
-The portal reads each person’s Excel file with [SheetJS](https://sheetjs.com/) in the browser and renders an account table with totals. Users can **export** a new Excel snapshot (client‑side) but **cannot save back to the server** (no backend).
+The portal reads each person’s JSON dataset, renders an account table with totals, and uses [SheetJS](https://sheetjs.com/) to build Excel workbooks. Users can **download** the preserved dataset as a `.zip` (Excel inside) or **export** a new Excel snapshot (client‑side); neither action saves back to the server.
 
 ---
 
 ## Add a new member
 
-1. Copy `data/accounts/jyo_account.xlsx` → `data/accounts/<username>_account.xlsx`.
+1. Copy `data/accounts/jyo_account.json` → `data/accounts/<username>_account.json` (or start from `sample_account.json`).
 2. Edit `data/users.json` and add an object like:
 
 ```json
@@ -48,7 +64,7 @@ The portal reads each person’s Excel file with [SheetJS](https://sheetjs.com/)
   "phone": "+91 9xxx",
   "email": "anu@example.com",
   "photo": "data/profile_photos/manager.svg",
-  "account_excel": "data/accounts/anu_account.xlsx",
+  "account_excel": "data/accounts/anu_account.json",
   "salt": "<GENERATE>",
   "password_hash": "<SHA256(salt + password)>"
 }
@@ -78,13 +94,11 @@ The portal reads each person’s Excel file with [SheetJS](https://sheetjs.com/)
 
 ## Roadmap ideas
 
-- Proper authentication (password reset, email/OTP, role‑based routes)
-- Backend database (member profiles and accounts stored centrally)
-- Audit log for changes; monthly interest auto‑calculation
-- Attachments (receipts), photo capture on mobile
-- Multi‑branch support (units/chapters), per‑branch managers
-- Download monthly statements as PDF
-- Malayalam/English translation, INR formatting
+- Real backend APIs for authentication, profile/account persistence, and secure password resets.
+- Email/SMS delivery for OTP and notifications (replace the on-screen demo codes).
+- Server-side audit log retention with tamper resistance and export tooling.
+- Malayalam/English translation, INR formatting polish, and accessibility audits.
+- Workflow automation: monthly interest posting, delinquency alerts, and statement emails.
 
 ---
 

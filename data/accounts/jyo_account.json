@@ -1,0 +1,42 @@
+{
+  "owner": "jyo",
+  "branch": "thrissur",
+  "generated": "2024-02-01",
+  "account": [
+    {
+      "Date": "2024-01-03",
+      "Description": "Loan disbursal",
+      "Type": "Credit",
+      "Amount": 60000,
+      "Notes": "Education loan"
+    },
+    {
+      "Date": "2024-01-10",
+      "Description": "Receipt upload",
+      "Type": "Note",
+      "Amount": 0,
+      "Notes": "Tuition receipt stored in portal"
+    },
+    {
+      "Date": "2024-01-20",
+      "Description": "Monthly repayment",
+      "Type": "Debit",
+      "Amount": -5000,
+      "Notes": "UPI transfer"
+    },
+    {
+      "Date": "2024-01-25",
+      "Description": "Savings interest",
+      "Type": "Credit",
+      "Amount": 900,
+      "Notes": "1.5% savings bonus"
+    },
+    {
+      "Date": "2024-01-31",
+      "Description": "Late fee reversal",
+      "Type": "Credit",
+      "Amount": 250,
+      "Notes": "Manager approved"
+    }
+  ]
+}
