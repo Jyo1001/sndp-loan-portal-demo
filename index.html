@@ -26,9 +26,10 @@
           <input class="input" id="username" autocomplete="username" required/>
           <label>Password</label>
           <input class="input" id="password" type="password" autocomplete="current-password" required/>
-          <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn" type="submit">Sign in</button>
-            <span id="loginMsg" class="small"></span>
+            <button class="btn ghost" type="button" onclick="openReset()">Forgot password?</button>
+            <span id="loginMsg" class="small" style="flex:1 1 160px"></span>
           </div>
         </form>
       </div>
@@ -45,12 +46,50 @@
     <footer>© SNDP Demo • Built for GitHub Pages • No server required</footer>
   </div>
 
+  <div id="resetModal" class="modal hidden">
+    <div class="modal-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Reset password</h3>
+        <button class="btn ghost" type="button" onclick="closeReset()">Close</button>
+      </div>
+      <p class="small">Enter your username to receive a one-time password (OTP). For this offline demo the OTP is shown onscreen instead of being emailed.</p>
+      <div class="grid two" style="grid-template-columns:1fr">
+        <label>Username<input class="input" id="resetUser"/></label>
+        <button class="btn" type="button" onclick="sendOtp()">Send OTP</button>
+        <div id="otpArea" class="hidden">
+          <label>Enter OTP<input class="input" id="otpInput"/></label>
+          <label>New password<input class="input" id="newPassword" type="password"/></label>
+          <button class="btn" type="button" onclick="submitReset()">Update password</button>
+          <p id="otpStatus" class="small"></p>
+        </div>
+        <p id="otpHint" class="small"></p>
+      </div>
+    </div>
+  </div>
+
   <script>
   async function sha256Hex(str){
     const enc = new TextEncoder().encode(str);
     const buf = await crypto.subtle.digest('SHA-256', enc);
     const bytes = Array.from(new Uint8Array(buf));
     return bytes.map(b => b.toString(16).padStart(2,'0')).join('');
+  }
+  function recordAudit(entry){
+    try{
+      const list = JSON.parse(localStorage.getItem('audit_log')||'[]');
+      list.push({...entry, ts: new Date().toISOString()});
+      while(list.length>500){ list.shift(); }
+      localStorage.setItem('audit_log', JSON.stringify(list));
+    }catch(err){ console.error('audit log failed', err); }
+  }
+  function applyPasswordOverride(rec){
+    try{
+      const override = JSON.parse(localStorage.getItem('override_'+rec.username)||'null');
+      if(override && override.password_hash && override.salt){
+        return {...rec, salt: override.salt, password_hash: override.password_hash};
+      }
+    }catch(err){ console.warn('override parse failed', err); }
+    return rec;
   }
   async function login(ev){
     ev.preventDefault();
@@ -61,17 +100,62 @@
     try{
       const res = await fetch('data/users.json');
       const db = await res.json();
-      const rec = db.users.find(x => x.username === u);
+      let rec = db.users.find(x => x.username === u);
       if(!rec){ msg.textContent = 'User not found'; return; }
+      rec = applyPasswordOverride(rec);
       const hash = await sha256Hex(rec.salt + p);
       if(hash !== rec.password_hash){ msg.textContent = 'Invalid password'; return; }
       // Save session
       localStorage.setItem('sndp_session', JSON.stringify({username: u, role: rec.role, ts: Date.now()}));
+      recordAudit({actor: u, action: 'login', branch: rec.branch||null});
       location.href = 'app.html';
     }catch(e){
       console.error(e);
       msg.textContent = 'Error loading users.json';
     }
+  }
+  function openReset(){
+    document.getElementById('resetModal').classList.remove('hidden');
+    document.getElementById('resetUser').focus();
+  }
+  function closeReset(){
+    document.getElementById('resetModal').classList.add('hidden');
+    document.getElementById('resetUser').value = '';
+    document.getElementById('otpArea').classList.add('hidden');
+    document.getElementById('otpStatus').textContent = '';
+    document.getElementById('otpHint').textContent = '';
+  }
+  async function sendOtp(){
+    const user = document.getElementById('resetUser').value.trim();
+    if(!user){ alert('Enter username'); return; }
+    const res = await fetch('data/users.json');
+    const db = await res.json();
+    const rec = db.users.find(x => x.username === user);
+    if(!rec){ alert('User not found'); return; }
+    const code = Math.floor(100000 + Math.random()*900000).toString();
+    localStorage.setItem('otp_'+user, JSON.stringify({code, expires: Date.now()+10*60*1000}));
+    document.getElementById('otpArea').classList.remove('hidden');
+    document.getElementById('otpStatus').textContent = '';
+    document.getElementById('otpHint').textContent = `OTP for demo purposes: ${code}`;
+    recordAudit({actor: user, action: 'otp_sent', branch: rec.branch||null});
+  }
+  async function submitReset(){
+    const user = document.getElementById('resetUser').value.trim();
+    const otp = document.getElementById('otpInput').value.trim();
+    const pass = document.getElementById('newPassword').value;
+    const status = document.getElementById('otpStatus');
+    if(!otp || !pass){ status.textContent = 'Enter OTP and new password'; return; }
+    const stored = localStorage.getItem('otp_'+user);
+    if(!stored){ status.textContent = 'No OTP found, request again.'; return; }
+    const rec = JSON.parse(stored);
+    if(Date.now()>rec.expires){ status.textContent = 'OTP expired. Request a new one.'; return; }
+    if(rec.code !== otp){ status.textContent = 'Incorrect OTP.'; return; }
+    const salt = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b=>b.toString(16).padStart(2,'0')).join('');
+    const hash = await sha256Hex(salt + pass);
+    localStorage.setItem('override_'+user, JSON.stringify({salt, password_hash: hash}));
+    localStorage.removeItem('otp_'+user);
+    status.textContent = 'Password updated. You can now sign in.';
+    recordAudit({actor: user, action: 'password_reset', branch: null});
   }
   document.getElementById('loginForm').addEventListener('submit', login);
   </script>

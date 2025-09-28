@@ -7,14 +7,16 @@
   <link rel="stylesheet" href="styles.css"/>
   <meta name="color-scheme" content="dark light"/>
   <!-- SheetJS to read/write Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 </head>
 <body>
   <div class="container">
     <div class="header">
       <div>
         <div class="title">SNDP Loan Portal</div>
-        <div class="sub">Welcome, <span id="who"></span></div>
+        <div class="sub">Welcome, <span id="who"></span> • <span class="tag" id="branchTag"></span></div>
       </div>
       <div class="nav">
         <a href="#" onclick="showTab('profile');return false;">Profile</a>
@@ -55,10 +57,18 @@
         <div>
           <div class="small">Current Account Excel: <code id="acctPath"></code></div>
           <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap">
-            <a class="btn ghost" id="downloadLink" href="#" download>Download Original</a>
+            <a class="btn ghost" id="downloadLink" href="#" download>Download Original (.zip)</a>
             <button class="btn" onclick="exportAccountExcel()">Export Current View.xlsx</button>
             <label class="btn ghost" for="upExcel" style="cursor:pointer">Open Excel from my computer</label>
             <input id="upExcel" type="file" accept=".xlsx,.xls" class="hidden" onchange="openLocalExcel(this)"/>
+          </div>
+          <div style="margin:8px 0;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+            <label class="small">Statement month<input class="input" type="month" id="stmtMonth"/></label>
+            <button class="btn" type="button" onclick="downloadStatementPdf()">Download monthly PDF</button>
+          </div>
+          <div>
+            <div class="small">Auto interest projection (1% monthly on balance)</div>
+            <div id="interestSummary" class="pill-list"></div>
           </div>
         </div>
         <div>
@@ -67,6 +77,7 @@
             <div class="card"><div class="small">Total Repaid</div><div id="kRepaid" style="font-size:18px;font-weight:700"></div></div>
             <div class="card"><div class="small">Balance Owed</div><div id="kBalance" style="font-size:18px;font-weight:700"></div></div>
           </div>
+          <p class="small" id="interestNote"></p>
         </div>
       </div>
       <div style="overflow:auto;margin-top:12px">
@@ -75,17 +86,48 @@
           <tbody></tbody>
         </table>
       </div>
+      <div class="card" style="margin-top:12px">
+        <h4>Attachments &amp; Receipts</h4>
+        <p class="small">Upload supporting receipts for each transaction. Files are kept only in your browser for this demo.</p>
+        <div class="grid two">
+          <div>
+            <label>Transaction<select id="txnSelect" class="input"></select></label>
+            <label class="small" style="margin-top:8px">Notes<textarea id="receiptNote" class="input" rows="2" style="min-height:60px"></textarea></label>
+          </div>
+          <div>
+            <label class="btn" style="cursor:pointer">Upload file<input id="receiptFile" type="file" class="hidden" accept="image/*,.pdf" onchange="handleReceiptUpload(this)"/></label>
+            <label class="btn ghost" style="cursor:pointer;margin-top:8px">Capture photo<input id="receiptCamera" type="file" class="hidden" accept="image/*" capture="environment" onchange="handleReceiptUpload(this)"/></label>
+          </div>
+        </div>
+        <div id="receiptList" class="pill-list" style="margin-top:12px"></div>
+      </div>
     </div>
 
     <div id="manager" class="card hidden">
       <h3>Manager — All Members</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <label>Branch
+          <select id="branchFilter" class="input" style="min-width:200px" onchange="renderManagerView()"></select>
+        </label>
+        <div class="small" id="branchMeta"></div>
+      </div>
       <div id="usersList" class="grid two"></div>
+      <div class="card" style="margin-top:12px">
+        <h4>Audit log</h4>
+        <p class="small">Recent security events for your branch. Stored locally for demo purposes.</p>
+        <div class="log-table">
+          <table>
+            <thead><tr><th>When</th><th>User</th><th>Action</th><th>Details</th></tr></thead>
+            <tbody id="auditRows"></tbody>
+          </table>
+        </div>
+      </div>
       <div class="card" style="margin-top:12px">
         <h4>How to add a new member (manual, demo)</h4>
         <ol class="small">
-          <li>Copy <code>data/accounts/jyo_account.xlsx</code> and rename to <code>&lt;username&gt;_account.xlsx</code>.</li>
+          <li>Copy <code>data/accounts/jyo_account.json</code> (or <code>sample_account.json</code>) and rename to <code>&lt;username&gt;_account.json</code>.</li>
           <li>Edit <code>data/users.json</code> to add a new user object. Generate a new salt and SHA-256 hash for their password (see README).</li>
-          <li>Commit changes to GitHub. The new user can now sign in.</li>
+          <li>Commit changes to GitHub. The new user can now sign in and download the `.zip` workbook from the portal.</li>
         </ol>
       </div>
     </div>
@@ -94,15 +136,53 @@
   </div>
 
   <script>
-  let SESSION = null, USERS = null, ME = null;
+  let SESSION = null, USERS = null, USER_MAP = new Map(), BRANCHES = null, ME = null, ACTIVE_ACCOUNT_OWNER = null, ATTACHMENTS = {};
 
+  function branchNameFor(id){
+    if(!BRANCHES) return id || 'Unassigned';
+    const found = BRANCHES.branches.find(b => b.id === id);
+    return found ? found.name : (id || 'Unassigned');
+  }
   function showTab(id){
     for(const x of ['profile','account','manager']){
       document.getElementById(x).classList.add('hidden');
     }
     document.getElementById(id).classList.remove('hidden');
   }
+  function loadAttachmentStore(){
+    try{ ATTACHMENTS = JSON.parse(localStorage.getItem('attachments')||'{}'); }
+    catch{ ATTACHMENTS = {}; }
+  }
+  function saveAttachmentStore(){
+    localStorage.setItem('attachments', JSON.stringify(ATTACHMENTS));
+  }
+  function getAttachmentList(owner){
+    if(!ATTACHMENTS[owner]) ATTACHMENTS[owner] = [];
+    return ATTACHMENTS[owner];
+  }
+  function recordAudit(entry){
+    try{
+      const list = JSON.parse(localStorage.getItem('audit_log')||'[]');
+      const branch = entry.branch || (entry.target ? USER_MAP.get(entry.target)?.branch : ME?.branch) || null;
+      const payload = {
+        actor: entry.actor || (ME ? ME.username : null),
+        target: entry.target || null,
+        action: entry.action,
+        details: entry.details || null,
+        branch,
+        ts: new Date().toISOString()
+      };
+      list.push(payload);
+      while(list.length>500){ list.shift(); }
+      localStorage.setItem('audit_log', JSON.stringify(list));
+      if(ME?.role === 'manager'){
+        const branchId = document.getElementById('branchFilter')?.value || ME.branch;
+        renderAuditLog(branchId);
+      }
+    }catch(err){ console.error('audit log failed', err); }
+  }
   function logout(){
+    recordAudit({action:'logout'});
     localStorage.removeItem('sndp_session');
     location.href = 'index.html';
   }
@@ -120,6 +200,7 @@
       photoDataUrl: document.getElementById('avatar').src.startsWith('data:') ? document.getElementById('avatar').src : null
     };
     localStorage.setItem('profile_'+ME.username, JSON.stringify(p));
+    recordAudit({action:'profile_saved'});
     alert('Saved to this browser.');
   }
   function handlePhoto(inp){
@@ -139,62 +220,256 @@
   }
 
   function fmtMoney(n){ return new Intl.NumberFormat(undefined,{style:'currency',currency:'INR',maximumFractionDigits:0}).format(n); }
-
-  async function loadAccount(path){
-    document.getElementById('acctPath').textContent = path;
-    document.getElementById('downloadLink').href = path;
-    const res = await fetch(path);
-    const buf = await res.arrayBuffer();
-    const wb = XLSX.read(buf, {type: 'array'});
-    const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+  function describeTxn(row){
+    const amt = Number(row.Amount||0);
+    const amtTxt = isNaN(amt)?'0':fmtMoney(amt).replace('₹','₹ ');
+    return `${row.Date||'No date'} • ${row.Description||'Transaction'} (${amtTxt})`;
+  }
+  function formatMonth(monthStr){
+    if(!monthStr) return 'Unknown';
+    const d = new Date(monthStr.length>7 ? monthStr : monthStr + '-01');
+    return d.toLocaleString(undefined,{month:'short', year:'numeric'});
+  }
+  function normalizeAccountRow(row){
+    const amount = typeof row.Amount === 'number' ? row.Amount : parseFloat(row.Amount || 0) || 0;
+    return {
+      Date: row.Date || '',
+      Description: row.Description || '',
+      Type: row.Type || '',
+      Amount: amount,
+      Notes: row.Notes || ''
+    };
+  }
+  function processAccountRows(rows){
+    let running=0;
+    return rows.map((r,i)=>{
+      const amt = parseFloat(r.Amount||0) || 0;
+      running += amt;
+      return {...r, Amount: amt, __rowId:i, __balance: running};
+    });
+  }
+  function computeInterestSummary(rows){
+    const map = new Map();
+    for(const row of rows){
+      if(!row.Date) continue;
+      const monthKey = row.Date.slice(0,7);
+      const existing = map.get(monthKey) || {month: monthKey, closing: 0, lastDate: row.Date};
+      existing.closing = row.__balance;
+      existing.lastDate = row.Date;
+      map.set(monthKey, existing);
+    }
+    const arr = Array.from(map.values()).sort((a,b)=>a.month.localeCompare(b.month));
+    return arr.map(item => ({...item, interest: item.closing * 0.01}));
+  }
+  function renderInterestSummary(rows){
+    const wrap = document.getElementById('interestSummary');
+    const note = document.getElementById('interestNote');
+    wrap.innerHTML = '';
+    const summary = computeInterestSummary(rows);
+    window._interestSummary = summary;
+    if(summary.length === 0){
+      wrap.innerHTML = '<span class="small">No interest projections — add dated transactions.</span>';
+      note.textContent = '';
+      return;
+    }
+    const recent = summary.slice(-6);
+    for(const item of recent){
+      const pill = document.createElement('div');
+      pill.className = 'pill';
+      pill.textContent = `${formatMonth(item.month)} • ${fmtMoney(item.interest)}`;
+      wrap.appendChild(pill);
+    }
+    const last = summary[summary.length-1];
+    const nextDate = new Date(last.lastDate || (last.month + '-01'));
+    nextDate.setMonth(nextDate.getMonth()+1);
+    note.textContent = `Interest for ${formatMonth(last.month)} estimated at ${fmtMoney(last.interest)}. Next cycle: ${nextDate.toLocaleDateString()}.`;
+  }
+  function populateTxnSelect(rows){
+    const select = document.getElementById('txnSelect');
+    if(!select) return;
+    select.innerHTML = '';
+    const placeholder = document.createElement('option');
+    placeholder.value = '';
+    placeholder.textContent = 'Select transaction';
+    select.appendChild(placeholder);
+    rows.forEach(row => {
+      const opt = document.createElement('option');
+      opt.value = row.__rowId;
+      opt.textContent = describeTxn(row);
+      select.appendChild(opt);
+    });
+  }
+  function renderAttachments(){
+    const wrap = document.getElementById('receiptList');
+    if(!wrap || !ACTIVE_ACCOUNT_OWNER) return;
+    wrap.innerHTML = '';
+    const list = getAttachmentList(ACTIVE_ACCOUNT_OWNER);
+    if(list.length === 0){
+      const empty = document.createElement('span');
+      empty.className = 'small';
+      empty.textContent = 'No receipts stored for this account yet.';
+      wrap.appendChild(empty);
+      return;
+    }
+    list.forEach((att, idx) => {
+      const item = document.createElement('div');
+      item.className = 'pill';
+      item.style.display = 'flex';
+      item.style.alignItems = 'center';
+      item.style.gap = '6px';
+      const label = document.createElement('span');
+      label.textContent = `${att.txnLabel}`;
+      const link = document.createElement('a');
+      link.href = att.dataUrl;
+      link.download = att.name;
+      link.textContent = 'Open';
+      const meta = document.createElement('span');
+      meta.className = 'small';
+      meta.textContent = new Date(att.created).toLocaleString();
+      const note = document.createElement('span');
+      note.className = 'small';
+      note.textContent = att.note ? `Note: ${att.note}` : '';
+      const btn = document.createElement('button');
+      btn.className = 'btn ghost';
+      btn.style.padding = '4px 8px';
+      btn.style.fontSize = '10px';
+      btn.textContent = 'Delete';
+      btn.onclick = () => removeAttachment(idx);
+      item.append(label, link, meta);
+      if(att.note){ item.appendChild(note); }
+      item.appendChild(btn);
+      wrap.appendChild(item);
+    });
+  }
+  function ensureStatementMonth(rows){
+    const monthInput = document.getElementById('stmtMonth');
+    if(!monthInput) return;
+    if(monthInput.value) return;
+    const dated = rows.find(r => r.Date);
+    const fallback = new Date().toISOString().slice(0,7);
+    monthInput.value = dated ? dated.Date.slice(0,7) : fallback;
+  }
+  function renderAccount(rows){
     const tbody = document.querySelector('#acctTable tbody');
     tbody.innerHTML = '';
-    let totalLoaned=0, totalRepaid=0, bal=0;
+    let totalLoaned=0, totalRepaid=0;
     for(const r of rows){
-      const amt = parseFloat(r.Amount||0);
-      bal += amt;
+      const amt = r.Amount || 0;
       if(amt>0) totalLoaned+=amt; else totalRepaid+=-amt;
       const tr = document.createElement('tr');
-      tr.innerHTML = `<td>${r.Date||''}</td><td>${r.Description||''}</td><td>${r.Type||''}</td>
-                      <td>${amt.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
-                      <td>${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
-                      <td>${r.Notes||''}</td>`;
+      tr.innerHTML = `<td>${r.Date||''}</td><td>${r.Description||''}</td><td>${r.Type||''}</td>`
+                    + `<td>${amt.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`
+                    + `<td>${r.__balance.toLocaleString(undefined,{maximumFractionDigits:2})}</td>`
+                    + `<td>${r.Notes||''}</td>`;
       tbody.appendChild(tr);
     }
     document.getElementById('kLoaned').textContent = fmtMoney(totalLoaned);
     document.getElementById('kRepaid').textContent = fmtMoney(totalRepaid);
+    const bal = rows.length ? rows[rows.length-1].__balance : 0;
     document.getElementById('kBalance').textContent = fmtMoney(bal);
-    // keep in memory for export
-    window._acctRows = rows.map((r,i)=>({...r, Balance: undefined}));
+    renderInterestSummary(rows);
+    populateTxnSelect(rows);
+    ensureStatementMonth(rows);
+    renderAttachments();
   }
-
-  function exportAccountExcel(){
-    const rows = window._acctRows || [];
-    const ws = XLSX.utils.json_to_sheet(rows);
-    // recompute running balance in JS and add a Balance column
-    let running=0;
-    const data = XLSX.utils.sheet_to_json(ws, {header:1, defval:''});
-    const headers = data[0]; 
-    let balIdx = headers.indexOf('Balance');
-    if(balIdx<0){ headers.push('Balance'); balIdx = headers.length-1; }
-    for(let i=1;i<data.length;i++){
-      const amt = parseFloat(data[i][headers.indexOf('Amount')]||0);
-      running += amt;
-      data[i][balIdx] = running;
+  async function loadAccount(path, ownerUsername){
+    ACTIVE_ACCOUNT_OWNER = ownerUsername || (ME ? ME.username : null);
+    document.getElementById('acctPath').textContent = path;
+    const link = document.getElementById('downloadLink');
+    if(link){
+      link.href = '#';
+      link.removeAttribute('download');
+      link.dataset.source = path;
     }
-    const newWs = XLSX.utils.aoa_to_sheet(data);
+    window._acctMeta = {source: path, owner: ACTIVE_ACCOUNT_OWNER};
+    try{
+      if(path.endsWith('.json')){
+        const res = await fetch(path);
+        const payload = await res.json();
+        const dataset = Array.isArray(payload.account) ? payload.account
+                       : Array.isArray(payload.rows) ? payload.rows
+                       : Array.isArray(payload) ? payload : [];
+        const normalized = dataset.map(normalizeAccountRow);
+        window._acctOriginalRows = normalized.map(r => ({...r}));
+        window._acctMeta = {
+          ...window._acctMeta,
+          owner: payload.owner || ACTIVE_ACCOUNT_OWNER,
+          branch: payload.branch || null,
+          generated: payload.generated || null
+        };
+        window._acctRows = processAccountRows(normalized);
+      }else{
+        const res = await fetch(path);
+        const buf = await res.arrayBuffer();
+        const wb = XLSX.read(buf, {type: 'array'});
+        const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+        const normalized = rows.map(normalizeAccountRow);
+        window._acctOriginalRows = normalized.map(r => ({...r}));
+        window._acctRows = processAccountRows(normalized);
+      }
+      recordAudit({action:'account_view', target: ACTIVE_ACCOUNT_OWNER, details:{path}});
+      renderAccount(window._acctRows);
+    }catch(err){
+      console.error('Failed to load account', err);
+      alert('Unable to load account data. Please check the repository file.');
+    }
+  }
+  function exportAccountExcel(){
+    const rows = (window._acctRows || []).map(r => {
+      const {__rowId,__balance,...rest} = r;
+      return {...rest, Balance: r.__balance};
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, newWs, 'Account');
+    XLSX.utils.book_append_sheet(wb, ws, 'Account');
     const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
     const blob = new Blob([wbout], {type:'application/octet-stream'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `${ME.username}_account_export.xlsx`;
+    a.download = `${ACTIVE_ACCOUNT_OWNER}_account_export.xlsx`;
     a.click();
     URL.revokeObjectURL(a.href);
+    recordAudit({action:'account_export', target: ACTIVE_ACCOUNT_OWNER});
   }
-
+  async function downloadAccountZip(ev){
+    if(ev) ev.preventDefault();
+    if(!window._acctRows || !ACTIVE_ACCOUNT_OWNER){
+      alert('Open an account first.');
+      return;
+    }
+    const rows = (window._acctRows || []).map(r => {
+      const {__rowId,__balance,...rest} = r;
+      return {...rest, Balance: r.__balance};
+    });
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Account');
+    const wbout = XLSX.write(wb, {bookType:'xlsx', type:'array'});
+    let blob;
+    if(window.JSZip){
+      const zip = new JSZip();
+      const wbData = wbout instanceof ArrayBuffer ? new Uint8Array(wbout) : wbout;
+      zip.file(`${ACTIVE_ACCOUNT_OWNER}_account.xlsx`, wbData);
+      const meta = window._acctMeta || {};
+      const readme = [
+        `Owner: ${meta.owner || ACTIVE_ACCOUNT_OWNER}`,
+        `Branch: ${meta.branch || 'n/a'}`,
+        `Source file: ${meta.source || 'n/a'}`,
+        `Generated: ${new Date().toISOString()}`
+      ].join('\n');
+      zip.file('README.txt', readme + '\n');
+      blob = await zip.generateAsync({type:'blob'});
+    }else{
+      blob = new Blob([wbout], {type:'application/octet-stream'});
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${ACTIVE_ACCOUNT_OWNER}_account.${window.JSZip ? 'zip' : 'xlsx'}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    recordAudit({action:'account_download_zip', target: ACTIVE_ACCOUNT_OWNER, details:{source: (window._acctMeta||{}).source || null}});
+  }
   function openLocalExcel(inp){
     const file = inp.files[0]; if(!file) return;
     const r = new FileReader();
@@ -202,68 +477,198 @@
       const wb = XLSX.read(r.result, {type:'array'});
       const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
       const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
-      window._acctRows = rows;
-      // Render
-      const tbody = document.querySelector('#acctTable tbody');
-      tbody.innerHTML = '';
-      let totalLoaned=0, totalRepaid=0, bal=0;
-      for(const r of rows){
-        const amt = parseFloat(r.Amount||0);
-        bal += amt;
-        if(amt>0) totalLoaned+=amt; else totalRepaid+=-amt;
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.Date||''}</td><td>${r.Description||''}</td><td>${r.Type||''}</td>
-                        <td>${amt.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
-                        <td>${bal.toLocaleString(undefined,{maximumFractionDigits:2})}</td>
-                        <td>${r.Notes||''}</td>`;
-        tbody.appendChild(tr);
-      }
-      document.getElementById('kLoaned').textContent = fmtMoney(totalLoaned);
-      document.getElementById('kRepaid').textContent = fmtMoney(totalRepaid);
-      document.getElementById('kBalance').textContent = fmtMoney(bal);
+      const normalized = rows.map(normalizeAccountRow);
+      window._acctOriginalRows = normalized.map(row => ({...row}));
+      window._acctRows = processAccountRows(normalized);
+      renderAccount(window._acctRows);
+      recordAudit({action:'account_open_local', target: ACTIVE_ACCOUNT_OWNER});
     };
     r.readAsArrayBuffer(file);
+  }
+  function renderAuditLog(branchId){
+    const tbody = document.getElementById('auditRows');
+    if(!tbody) return;
+    tbody.innerHTML = '';
+    const log = JSON.parse(localStorage.getItem('audit_log')||'[]');
+    const filtered = log.filter(entry => !branchId || entry.branch === branchId).slice(-100).reverse();
+    for(const entry of filtered){
+      const tr = document.createElement('tr');
+      const detail = typeof entry.details === 'string' ? entry.details : (entry.details ? JSON.stringify(entry.details) : '');
+      tr.innerHTML = `<td>${new Date(entry.ts).toLocaleString()}</td>`
+                     + `<td>${entry.actor || 'system'}</td>`
+                     + `<td>${entry.action}</td>`
+                     + `<td>${detail}</td>`;
+      tbody.appendChild(tr);
+    }
+  }
+  function renderManagerView(){
+    const wrap = document.getElementById('usersList');
+    const branchSelect = document.getElementById('branchFilter');
+    if(!wrap || !branchSelect) return;
+    const branchId = branchSelect.value;
+    wrap.innerHTML = '';
+    const branch = BRANCHES?.branches.find(b => b.id === branchId);
+    const meta = document.getElementById('branchMeta');
+    if(meta){
+      if(branch){
+        const manager = USER_MAP.get(branch.manager);
+        meta.textContent = `${branch.name} • Manager: ${manager?.full_name || branch.manager} • ${branch.phone}`;
+      }else{
+        meta.textContent = '';
+      }
+    }
+    const users = USERS.users.filter(u => !branchId || u.branch === branchId);
+    for(const u of users){
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.innerHTML = `
+        <div style="display:flex;gap:12px;align-items:center">
+          <img class="avatar" src="${u.photo}" alt="avatar"/>
+          <div style="flex:1">
+            <div style="font-weight:700">${u.full_name} — <span class="tag">${u.role}</span></div>
+            <div class="small">${u.username} • ${u.email} • ${u.phone}</div>
+            <div class="small">Branch: ${branchNameFor(u.branch)}</div>
+            <div class="small">Account data: <code>${u.account_excel}</code></div>
+          </div>
+          <button class="btn" onclick="loadAccount('${u.account_excel}','${u.username}');showTab('account');">Open Account</button>
+        </div>`;
+      wrap.appendChild(card);
+    }
+    renderAuditLog(branchId);
+  }
+  function handleReceiptUpload(input){
+    const file = input.files[0];
+    if(!file){ return; }
+    if(!ACTIVE_ACCOUNT_OWNER){ alert('Open an account first.'); return; }
+    const txnId = document.getElementById('txnSelect').value;
+    if(!txnId){ alert('Select the related transaction first.'); input.value=''; return; }
+    const note = document.getElementById('receiptNote').value.trim();
+    const reader = new FileReader();
+    reader.onload = () => {
+      const txnRow = (window._acctRows || []).find(r => String(r.__rowId) === txnId);
+      const attachment = {
+        txnId,
+        txnLabel: txnRow ? describeTxn(txnRow) : `Row ${txnId}`,
+        name: file.name,
+        mime: file.type,
+        dataUrl: reader.result,
+        note,
+        owner: ACTIVE_ACCOUNT_OWNER,
+        created: new Date().toISOString()
+      };
+      const list = getAttachmentList(ACTIVE_ACCOUNT_OWNER);
+      list.push(attachment);
+      saveAttachmentStore();
+      document.getElementById('receiptNote').value = '';
+      input.value = '';
+      renderAttachments();
+      recordAudit({action:'receipt_uploaded', target: ACTIVE_ACCOUNT_OWNER, details:{name: file.name, txnId}});
+    };
+    reader.readAsDataURL(file);
+  }
+  function removeAttachment(idx){
+    if(ACTIVE_ACCOUNT_OWNER == null) return;
+    const list = getAttachmentList(ACTIVE_ACCOUNT_OWNER);
+    const removed = list.splice(idx,1)[0];
+    saveAttachmentStore();
+    renderAttachments();
+    recordAudit({action:'receipt_deleted', target: ACTIVE_ACCOUNT_OWNER, details:{name: removed?.name}});
+  }
+  function downloadStatementPdf(){
+    if(!window.jspdf){ alert('PDF library not loaded'); return; }
+    const month = document.getElementById('stmtMonth').value;
+    if(!month){ alert('Select a month first'); return; }
+    const rows = (window._acctRows || []).filter(r => (r.Date||'').startsWith(month));
+    if(rows.length === 0){ alert('No transactions in selected month'); return; }
+    const owner = USER_MAP.get(ACTIVE_ACCOUNT_OWNER) || ME;
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    doc.setFontSize(16);
+    doc.text('SNDP Loan Portal — Monthly Statement', 14, 18);
+    doc.setFontSize(11);
+    doc.text(`Member: ${owner.full_name} (${owner.username})`, 14, 28);
+    doc.text(`Branch: ${branchNameFor(owner.branch)}`, 14, 34);
+    doc.text(`Month: ${formatMonth(month)}`, 14, 40);
+    let y = 52;
+    doc.setFontSize(10);
+    doc.text('Date', 14, y);
+    doc.text('Description', 32, y);
+    doc.text('Type', 102, y);
+    doc.text('Amount', 126, y);
+    doc.text('Balance', 154, y);
+    y += 6;
+    for(const row of rows){
+      if(y > 270){ doc.addPage(); y = 20; }
+      doc.text(String(row.Date||''), 14, y);
+      doc.text(String(row.Description||''), 32, y, {maxWidth:68});
+      doc.text(String(row.Type||''), 102, y);
+      doc.text(String(row.Amount||0), 126, y);
+      doc.text(String(row.__balance||0), 154, y);
+      y += 6;
+    }
+    const interest = (window._interestSummary||[]).find(i => i.month === month);
+    if(interest){
+      if(y > 250){ doc.addPage(); y = 20; }
+      doc.text(`Interest projection (1%): ${fmtMoney(interest.interest)}`, 14, y+6);
+    }
+    doc.save(`${ACTIVE_ACCOUNT_OWNER}_${month}_statement.pdf`);
+    recordAudit({action:'statement_pdf', target: ACTIVE_ACCOUNT_OWNER, details:{month}});
   }
 
   async function init(){
     const s = localStorage.getItem('sndp_session');
     if(!s){ location.href = 'index.html'; return; }
     SESSION = JSON.parse(s);
+    const downloadAnchor = document.getElementById('downloadLink');
+    if(downloadAnchor){ downloadAnchor.addEventListener('click', downloadAccountZip); }
     const res = await fetch('data/users.json');
     USERS = await res.json();
-    const me = USERS.users.find(u => u.username === SESSION.username);
+    USERS.users.forEach(u => USER_MAP.set(u.username, u));
+    const branchRes = await fetch('data/branches.json');
+    BRANCHES = await branchRes.json();
+    const me = USER_MAP.get(SESSION.username);
     if(!me){ logout(); return; }
     ME = me;
+    document.body.dataset.role = me.role;
     document.getElementById('who').textContent = me.full_name + ' (' + me.role + ')';
+    document.getElementById('branchTag').textContent = branchNameFor(me.branch);
     if(me.role === 'manager'){ document.getElementById('mgrTab').classList.remove('hidden'); }
-    // Fill profile
+    loadAttachmentStore();
     fillProfile();
-    // Load account
     showTab('account');
-    await loadAccount(me.account_excel);
-    // Manager list
+    await loadAccount(me.account_excel, me.username);
+    const monthInput = document.getElementById('stmtMonth');
+    if(monthInput && !monthInput.value){ monthInput.value = new Date().toISOString().slice(0,7); }
     if(me.role === 'manager'){
-      const wrap = document.getElementById('usersList');
-      wrap.innerHTML = '';
-      for(const u of USERS.users){
-        const card = document.createElement('div');
-        card.className = 'card';
-        card.innerHTML = \`
-          <div style="display:flex;gap:12px;align-items:center">
-            <img class="avatar" src="\${u.photo}" alt="avatar"/>
-            <div style="flex:1">
-              <div style="font-weight:700">\${u.full_name} — <span class="tag">\${u.role}</span></div>
-              <div class="small">\${u.username} • \${u.email} • \${u.phone}</div>
-              <div class="small">Excel: <code>\${u.account_excel}</code></div>
-            </div>
-            <button class="btn" onclick="loadAccount('\${u.account_excel}');showTab('account');">Open Account</button>
-          </div>
-        \`;
-        wrap.appendChild(card);
+      const select = document.getElementById('branchFilter');
+      if(select){
+        const canSeeAll = (me.permissions||[]).includes('accounts:write');
+        const options = (BRANCHES?.branches || []).filter(b => canSeeAll || b.id === me.branch);
+        for(const b of options){
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = branchNameFor(b.id);
+          select.appendChild(opt);
+        }
+        select.value = options[0]?.id || me.branch;
       }
+      renderManagerView();
     }
   }
+  window.renderManagerView = renderManagerView;
+  window.loadAccount = loadAccount;
+  window.handleReceiptUpload = handleReceiptUpload;
+  window.removeAttachment = removeAttachment;
+  window.downloadStatementPdf = downloadStatementPdf;
+  window.downloadAccountZip = downloadAccountZip;
+  window.exportAccountExcel = exportAccountExcel;
+  window.openLocalExcel = openLocalExcel;
+  window.saveProfileLocal = saveProfileLocal;
+  window.handlePhoto = handlePhoto;
+  window.showTab = showTab;
+  window.logout = logout;
   window.addEventListener('DOMContentLoaded', init);
   </script>
+
 </body>
 </html>

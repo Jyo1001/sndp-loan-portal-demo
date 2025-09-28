@@ -28,18 +28,18 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 - `index.html` — Login page
 - `app.html` — Portal (Profile, Account, Manager)
 - `styles.css` — Simple dark theme, mobile friendly
-- `data/users.json` — Users, roles, salted password hashes, profile + Excel path
-- `data/accounts/*.xlsx` — One Excel **account book per person**
+- `data/users.json` — Users, roles, salted password hashes, profile + account dataset path
+- `data/accounts/*.json` — One account dataset per person (download Excel `.zip` from the portal)
 - `data/profile_photos/*.svg` — Avatars
 - `README.md` + `README.html` — This help doc
 
-The portal reads each person’s Excel file with [SheetJS](https://sheetjs.com/) in the browser and renders an account table with totals. Users can **export** a new Excel snapshot (client‑side) but **cannot save back to the server** (no backend).
+The portal reads each person’s JSON dataset, renders an account table with totals, and uses [SheetJS](https://sheetjs.com/) to build Excel workbooks. Users can **download** the preserved dataset as a `.zip` (Excel inside) or **export** a new Excel snapshot (client‑side); neither action saves back to the server.
 
 ---
 
 ## Add a new member
 
-1. Copy `data/accounts/jyo_account.xlsx` → `data/accounts/<username>_account.xlsx`.
+1. Copy `data/accounts/jyo_account.json` → `data/accounts/<username>_account.json` (or start from `sample_account.json`).
 2. Edit `data/users.json` and add an object like:
 
 ```json
@@ -52,7 +52,7 @@ The portal reads each person’s Excel file with [SheetJS](https://sheetjs.com/)
   "phone": "+91 9xxx",
   "email": "anu@example.com",
   "photo": "data/profile_photos/manager.svg",
-  "account_excel": "data/accounts/anu_account.xlsx",
+  "account_excel": "data/accounts/anu_account.json",
   "salt": "<GENERATE>",
   "password_hash": "<SHA256(salt + password)>"
 }
