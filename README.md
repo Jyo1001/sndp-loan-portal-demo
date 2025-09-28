@@ -13,15 +13,18 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 3. Upload the folder contents to the repo root.
 4. Enable **GitHub Pages** (Settings → Pages → Deploy from branch → `main` → `/root`).
 5. Visit your Pages URL (wait a minute after first deploy).
+
 6. Sign in with:
    - **manager / demo123** (Kalady branch manager)
    - **kochi_mgr / demo123** (Kochi branch manager)
    - **jyo / demo123** (Kalady member)
    - **mariya / demo123** (Kochi member)
 
+
 ---
 
 ## What's new in this build
+
 
 - Password reset flow with OTP delivery (displayed on-screen for the offline demo) and per-user password overrides stored locally.
 - Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
@@ -32,16 +35,19 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 rates downloadable `.zip` files containing Excel workbooks on demand.
 - Local audit log viewer showing logins, exports, password resets, and document actions.
 
+
 ---
 
 ## What’s included
 
-- `index.html` — Login page
-- `app.html` — Portal (Profile, Account, Manager)
+- `index.html` — Landing page with dual logins, AI prompt helper, and sample Excel download
+- `app.html` — Portal (Profile, Account, Manager with top-down view + CSV export)
 - `styles.css` — Simple dark theme, mobile friendly
 - `data/users.json` — Users, roles, salted password hashes, profile + account dataset path
 - `data/branches.json` — Branch/unit metadata for managers
+
 - `data/accounts/*.json` — One account dataset per person (download as Excel `.zip` from the portal)
+
 - `data/profile_photos/*.svg` — Avatars
 - `README.md` + `README.html` — This help doc
 
@@ -71,6 +77,12 @@ The portal reads each person’s JSON dataset, renders an account table with tot
 ```
 
 3. Commit the changes. The new user can now sign in.
+
+### Generate more demo members automatically
+
+On `index.html`, use the **AI prompt** card to copy a ChatGPT-5 ready instruction block. It asks the assistant to return ten ready-to-commit user entries, matching account JSON files, and base64-encoded Excel workbooks you can decode locally. After pasting the results into `data/users.json` and the `data/accounts/` folder, managers will instantly see the new members inside the portfolio dashboard.
+
+Need a quick reference for the Excel structure? Click **Download sample Excel** on the same card — it builds a `.xlsx` from `data/accounts/sample_account.json` directly in the browser so you can inspect the expected columns.
 
 ### Generate salt + password hash
 

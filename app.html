@@ -104,6 +104,7 @@
     </div>
 
     <div id="manager" class="card hidden">
+
       <h3>Manager — All Members</h3>
       <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
         <label>Branch
@@ -113,6 +114,7 @@
       </div>
       <div id="usersList" class="grid two"></div>
       <div class="card" style="margin-top:12px">
+
         <h4>Audit log</h4>
         <p class="small">Recent security events for your branch. Stored locally for demo purposes.</p>
         <div class="log-table">
@@ -122,7 +124,9 @@
           </table>
         </div>
       </div>
+
       <div class="card" style="margin-top:12px">
+
         <h4>How to add a new member (manual, demo)</h4>
         <ol class="small">
           <li>Copy <code>data/accounts/jyo_account.json</code> (or <code>sample_account.json</code>) and rename to <code>&lt;username&gt;_account.json</code>.</li>
@@ -137,6 +141,7 @@
 
   <script>
   let SESSION = null, USERS = null, USER_MAP = new Map(), BRANCHES = null, ME = null, ACTIVE_ACCOUNT_OWNER = null, ATTACHMENTS = {};
+
 
   function branchNameFor(id){
     if(!BRANCHES) return id || 'Unassigned';
@@ -240,6 +245,7 @@
       Notes: row.Notes || ''
     };
   }
+
   function processAccountRows(rows){
     let running=0;
     return rows.map((r,i)=>{
@@ -248,6 +254,7 @@
       return {...r, Amount: amt, __rowId:i, __balance: running};
     });
   }
+
   function computeInterestSummary(rows){
     const map = new Map();
     for(const row of rows){
@@ -383,6 +390,7 @@
     }
     window._acctMeta = {source: path, owner: ACTIVE_ACCOUNT_OWNER};
     try{
+
       if(path.endsWith('.json')){
         const res = await fetch(path);
         const payload = await res.json();
@@ -408,6 +416,7 @@
         window._acctOriginalRows = normalized.map(r => ({...r}));
         window._acctRows = processAccountRows(normalized);
       }
+
       recordAudit({action:'account_view', target: ACTIVE_ACCOUNT_OWNER, details:{path}});
       renderAccount(window._acctRows);
     }catch(err){
@@ -501,7 +510,9 @@
       tbody.appendChild(tr);
     }
   }
+
   function renderManagerView(){
+
     const wrap = document.getElementById('usersList');
     const branchSelect = document.getElementById('branchFilter');
     if(!wrap || !branchSelect) return;
@@ -513,10 +524,12 @@
       if(branch){
         const manager = USER_MAP.get(branch.manager);
         meta.textContent = `${branch.name} • Manager: ${manager?.full_name || branch.manager} • ${branch.phone}`;
+
       }else{
         meta.textContent = '';
       }
     }
+
     const users = USERS.users.filter(u => !branchId || u.branch === branchId);
     for(const u of users){
       const card = document.createElement('div');
@@ -525,10 +538,12 @@
         <div style="display:flex;gap:12px;align-items:center">
           <img class="avatar" src="${u.photo}" alt="avatar"/>
           <div style="flex:1">
+
             <div style="font-weight:700">${u.full_name} — <span class="tag">${u.role}</span></div>
             <div class="small">${u.username} • ${u.email} • ${u.phone}</div>
             <div class="small">Branch: ${branchNameFor(u.branch)}</div>
             <div class="small">Account data: <code>${u.account_excel}</code></div>
+
           </div>
           <button class="btn" onclick="loadAccount('${u.account_excel}','${u.username}');showTab('account');">Open Account</button>
         </div>`;
@@ -536,6 +551,7 @@
     }
     renderAuditLog(branchId);
   }
+
   function handleReceiptUpload(input){
     const file = input.files[0];
     if(!file){ return; }
@@ -643,6 +659,8 @@
       const select = document.getElementById('branchFilter');
       if(select){
         const canSeeAll = (me.permissions||[]).includes('accounts:write');
+
+
         const options = (BRANCHES?.branches || []).filter(b => canSeeAll || b.id === me.branch);
         for(const b of options){
           const opt = document.createElement('option');
@@ -652,7 +670,9 @@
         }
         select.value = options[0]?.id || me.branch;
       }
+
       renderManagerView();
+
     }
   }
   window.renderManagerView = renderManagerView;
@@ -667,6 +687,7 @@
   window.handlePhoto = handlePhoto;
   window.showTab = showTab;
   window.logout = logout;
+
   window.addEventListener('DOMContentLoaded', init);
   </script>
 
