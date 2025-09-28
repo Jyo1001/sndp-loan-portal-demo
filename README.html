@@ -40,8 +40,9 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 - `app.html` — Portal (Profile, Account, Manager with top-down view + CSV export)
 - `styles.css` — Simple dark theme, mobile friendly
 - `data/users.json` — Users, roles, salted password hashes, profile + account dataset path
-- `data/branches.json` — Branch/unit metadata for managers
-- `data/accounts/*.json` — One account dataset per person (download as Excel `.zip` or export a fresh `.xlsx` from the portal)
+
+- `data/accounts/*.json` — One account dataset per person (download Excel `.zip` from the portal)
+
 - `data/profile_photos/*.svg` — Avatars
 - `README.md` + `README.html` — This help doc
 
@@ -51,7 +52,9 @@ The portal reads each person’s JSON dataset, renders an account table with tot
 
 ## Add a new member
 
-1. Copy `data/accounts/jyo_account.json` → `data/accounts/&lt;username&gt;_account.json` (or start from `sample_account.json`).
+
+1. Copy `data/accounts/jyo_account.json` → `data/accounts/<username>_account.json` (or start from `sample_account.json`).
+
 2. Edit `data/users.json` and add an object like:
 
 ```json
@@ -65,8 +68,10 @@ The portal reads each person’s JSON dataset, renders an account table with tot
   "email": "anu@example.com",
   "photo": "data/profile_photos/manager.svg",
   "account_excel": "data/accounts/anu_account.json",
-  "salt": "&lt;GENERATE&gt;",
-  "password_hash": "&lt;SHA256(salt + password)&gt;"
+
+  "salt": "<GENERATE>",
+  "password_hash": "<SHA256(salt + password)>"
+
 }
 ```
 

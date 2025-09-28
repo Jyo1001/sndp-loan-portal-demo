@@ -13,20 +13,28 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 3. Upload the folder contents to the repo root.
 4. Enable **GitHub Pages** (Settings → Pages → Deploy from branch → `main` → `/root`).
 5. Visit your Pages URL (wait a minute after first deploy).
-6. Sign in:
-   - **Member portal** — `jyo / demo123`, `mariya / demo123`
-   - **Manager cockpit** — `manager / demo123`, `kochi_mgr / demo123`
+
+6. Sign in with:
+   - **manager / demo123** (Kalady branch manager)
+   - **kochi_mgr / demo123** (Kochi branch manager)
+   - **jyo / demo123** (Kalady member)
+   - **mariya / demo123** (Kochi member)
+
 
 ---
 
 ## What's new in this build
 
-- Landing page glow-up with Sree Narayana Guru artwork, dual login cards, and copy tailored to members vs. managers.
-- Strictly separated login flows: member credentials open the personal portal, while manager credentials unlock the command center.
-- Branch intelligence dashboard with per-account cards, aggregate KPIs, and a one-click CSV export for portfolio oversight.
-- Copy/paste AI prompt (ChatGPT-5 ready) that asks for ten demo members, JSON account books, and base64 `.xlsx` payloads.
-- Sample Excel generator that turns `data/accounts/sample_account.json` into a downloadable workbook for quick inspection.
-- Existing goodies — OTP reset preview, attachments, interest projections, PDF statements, audit log — refreshed to play nicely with the new routing.
+
+- Password reset flow with OTP delivery (displayed on-screen for the offline demo) and per-user password overrides stored locally.
+- Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
+- Automatic monthly interest projections (1% demo rate) plus PDF statement export for any month.
+- Receipt/attachment capture with mobile camera support; files live in local storage for evaluation.
+- Multi-branch data model (`data/branches.json`) with per-branch account books and managers.
+- Fresh JSON account datasets for each demo user plus a reusable `sample_account.json` you can clone for new members. The UI gene
+rates downloadable `.zip` files containing Excel workbooks on demand.
+- Local audit log viewer showing logins, exports, password resets, and document actions.
+
 
 ---
 
@@ -37,7 +45,9 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 - `styles.css` — Simple dark theme, mobile friendly
 - `data/users.json` — Users, roles, salted password hashes, profile + account dataset path
 - `data/branches.json` — Branch/unit metadata for managers
-- `data/accounts/*.json` — One account dataset per person (download as Excel `.zip` or export a fresh `.xlsx` from the portal)
+
+- `data/accounts/*.json` — One account dataset per person (download as Excel `.zip` from the portal)
+
 - `data/profile_photos/*.svg` — Avatars
 - `README.md` + `README.html` — This help doc
 

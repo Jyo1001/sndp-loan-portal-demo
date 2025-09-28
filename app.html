@@ -104,30 +104,17 @@
     </div>
 
     <div id="manager" class="card hidden">
-      <h3>Manager — Branch Portfolio</h3>
-      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:16px;align-items:flex-end">
-        <label style="flex:0 0 220px">Branch
-          <select id="branchFilter" class="input" onchange="renderManagerView()"></select>
+
+      <h3>Manager — All Members</h3>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px">
+        <label>Branch
+          <select id="branchFilter" class="input" style="min-width:200px" onchange="renderManagerView()"></select>
         </label>
-        <div class="small" id="branchMeta" style="flex:1 1 260px"></div>
-        <button class="btn ghost" type="button" onclick="downloadPortfolioCsv()">Download summary (.csv)</button>
+        <div class="small" id="branchMeta"></div>
       </div>
-      <div class="card ghost">
-        <h4>Top-down view</h4>
-        <div id="managerStats" class="stat-grid" style="margin-top:12px"></div>
-        <div class="table-wrap" style="margin-top:16px">
-          <table class="table">
-            <thead><tr><th>Member</th><th>Branch</th><th>Total Loaned</th><th>Total Repaid</th><th>Balance</th><th>Transactions</th><th></th></tr></thead>
-            <tbody id="managerTableBody"></tbody>
-          </table>
-        </div>
-        <p class="table-note">Use the Open button to drill into the live account. Totals refresh instantly as data changes.</p>
-      </div>
-      <div style="margin-top:18px">
-        <h4>Member cards</h4>
-        <div id="usersList" class="grid two" style="margin-top:12px"></div>
-      </div>
-      <div class="card ghost" style="margin-top:18px">
+      <div id="usersList" class="grid two"></div>
+      <div class="card" style="margin-top:12px">
+
         <h4>Audit log</h4>
         <p class="small">Recent security events for your branch. Stored locally for demo purposes.</p>
         <div class="log-table">
@@ -137,7 +124,9 @@
           </table>
         </div>
       </div>
-      <div class="card ghost" style="margin-top:18px">
+
+      <div class="card" style="margin-top:12px">
+
         <h4>How to add a new member (manual, demo)</h4>
         <ol class="small">
           <li>Copy <code>data/accounts/jyo_account.json</code> (or <code>sample_account.json</code>) and rename to <code>&lt;username&gt;_account.json</code>.</li>
@@ -152,7 +141,7 @@
 
   <script>
   let SESSION = null, USERS = null, USER_MAP = new Map(), BRANCHES = null, ME = null, ACTIVE_ACCOUNT_OWNER = null, ATTACHMENTS = {};
-  const ACCOUNT_CACHE = new Map();
+
 
   function branchNameFor(id){
     if(!BRANCHES) return id || 'Unassigned';
@@ -256,9 +245,7 @@
       Notes: row.Notes || ''
     };
   }
-  function cloneRows(rows){
-    return rows.map(row => ({...row}));
-  }
+
   function processAccountRows(rows){
     let running=0;
     return rows.map((r,i)=>{
@@ -267,44 +254,7 @@
       return {...r, Amount: amt, __rowId:i, __balance: running};
     });
   }
-  function summariseRows(rows){
-    let loaned = 0, repaid = 0;
-    for(const r of rows){
-      const amt = r.Amount || 0;
-      if(amt > 0) loaned += amt; else repaid += -amt;
-    }
-    const balance = rows.length ? rows[rows.length-1].__balance : 0;
-    return {loaned, repaid, balance, transactions: rows.length};
-  }
-  async function fetchAccountDataset(path){
-    if(ACCOUNT_CACHE.has(path)) return ACCOUNT_CACHE.get(path);
-    let original = [];
-    let meta = {source: path};
-    if(path.endsWith('.json')){
-      const res = await fetch(path);
-      const payload = await res.json();
-      const dataset = Array.isArray(payload.account) ? payload.account
-                     : Array.isArray(payload.rows) ? payload.rows
-                     : Array.isArray(payload) ? payload : [];
-      original = dataset.map(normalizeAccountRow);
-      meta = {
-        ...meta,
-        owner: payload.owner || null,
-        branch: payload.branch || null,
-        generated: payload.generated || null
-      };
-    }else{
-      const res = await fetch(path);
-      const buf = await res.arrayBuffer();
-      const wb = XLSX.read(buf, {type: 'array'});
-      const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
-      original = rows.map(normalizeAccountRow);
-    }
-    const record = {original, meta};
-    ACCOUNT_CACHE.set(path, record);
-    return record;
-  }
+
   function computeInterestSummary(rows){
     const map = new Map();
     for(const row of rows){
@@ -440,16 +390,33 @@
     }
     window._acctMeta = {source: path, owner: ACTIVE_ACCOUNT_OWNER};
     try{
-      const dataset = await fetchAccountDataset(path);
-      window._acctOriginalRows = cloneRows(dataset.original);
-      window._acctMeta = {
-        ...window._acctMeta,
-        owner: dataset.meta.owner || ACTIVE_ACCOUNT_OWNER,
-        branch: dataset.meta.branch || null,
-        generated: dataset.meta.generated || null
-      };
-      const workingRows = cloneRows(dataset.original);
-      window._acctRows = processAccountRows(workingRows);
+
+      if(path.endsWith('.json')){
+        const res = await fetch(path);
+        const payload = await res.json();
+        const dataset = Array.isArray(payload.account) ? payload.account
+                       : Array.isArray(payload.rows) ? payload.rows
+                       : Array.isArray(payload) ? payload : [];
+        const normalized = dataset.map(normalizeAccountRow);
+        window._acctOriginalRows = normalized.map(r => ({...r}));
+        window._acctMeta = {
+          ...window._acctMeta,
+          owner: payload.owner || ACTIVE_ACCOUNT_OWNER,
+          branch: payload.branch || null,
+          generated: payload.generated || null
+        };
+        window._acctRows = processAccountRows(normalized);
+      }else{
+        const res = await fetch(path);
+        const buf = await res.arrayBuffer();
+        const wb = XLSX.read(buf, {type: 'array'});
+        const ws = wb.Sheets['Account'] || wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(ws, {defval:''});
+        const normalized = rows.map(normalizeAccountRow);
+        window._acctOriginalRows = normalized.map(r => ({...r}));
+        window._acctRows = processAccountRows(normalized);
+      }
+
       recordAudit({action:'account_view', target: ACTIVE_ACCOUNT_OWNER, details:{path}});
       renderAccount(window._acctRows);
     }catch(err){
@@ -543,7 +510,9 @@
       tbody.appendChild(tr);
     }
   }
-  async function renderManagerView(){
+
+  function renderManagerView(){
+
     const wrap = document.getElementById('usersList');
     const branchSelect = document.getElementById('branchFilter');
     if(!wrap || !branchSelect) return;
@@ -555,123 +524,34 @@
       if(branch){
         const manager = USER_MAP.get(branch.manager);
         meta.textContent = `${branch.name} • Manager: ${manager?.full_name || branch.manager} • ${branch.phone}`;
-      }else if(!branchId){
-        meta.textContent = 'All branches overview';
+
       }else{
         meta.textContent = '';
       }
     }
-    const statsWrap = document.getElementById('managerStats');
-    const tableBody = document.getElementById('managerTableBody');
-    if(statsWrap){ statsWrap.innerHTML = ''; }
-    if(tableBody){ tableBody.innerHTML = '<tr><td colspan="7">Loading account summaries…</td></tr>'; }
-    const users = USERS.users.filter(u => !branchId || u.branch === branchId).sort((a,b)=>a.full_name.localeCompare(b.full_name));
-    const summaries = await Promise.all(users.map(async (u) => {
-      try{
-        const dataset = await fetchAccountDataset(u.account_excel);
-        const processed = processAccountRows(cloneRows(dataset.original));
-        return {user: u, summary: summariseRows(processed), meta: dataset.meta};
-      }catch(err){
-        console.error('Manager summary failed for', u.username, err);
-        return {user: u, summary: {loaned:0,repaid:0,balance:0,transactions:0}, error: true};
-      }
-    }));
-    window._managerSummary = summaries;
-    let totalLoaned = 0, totalRepaid = 0, totalBalance = 0;
-    wrap.innerHTML = '';
-    const rows = [];
-    for(const entry of summaries){
-      const {user: u, summary} = entry;
-      totalLoaned += summary.loaned;
-      totalRepaid += summary.repaid;
-      totalBalance += summary.balance;
+
+    const users = USERS.users.filter(u => !branchId || u.branch === branchId);
+    for(const u of users){
       const card = document.createElement('div');
       card.className = 'card';
       card.innerHTML = `
-        <div style="display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap">
+        <div style="display:flex;gap:12px;align-items:center">
           <img class="avatar" src="${u.photo}" alt="avatar"/>
-          <div style="flex:1;min-width:220px">
+          <div style="flex:1">
+
             <div style="font-weight:700">${u.full_name} — <span class="tag">${u.role}</span></div>
             <div class="small">${u.username} • ${u.email} • ${u.phone}</div>
             <div class="small">Branch: ${branchNameFor(u.branch)}</div>
             <div class="small">Account data: <code>${u.account_excel}</code></div>
-            <div class="pill-list" style="margin-top:10px">
-              <span class="pill">Loaned: ${fmtMoney(summary.loaned)}</span>
-              <span class="pill">Repaid: ${fmtMoney(summary.repaid)}</span>
-              <span class="pill">Balance: ${fmtMoney(summary.balance)}</span>
-            </div>
+
           </div>
-          <button class="btn" onclick="loadAccount('${u.account_excel}','${u.username}');showTab('account');">Open account</button>
+          <button class="btn" onclick="loadAccount('${u.account_excel}','${u.username}');showTab('account');">Open Account</button>
         </div>`;
       wrap.appendChild(card);
-      const tr = document.createElement('tr');
-      const balanceStyle = summary.balance > 0 ? '' : ' style="color:var(--good);"';
-      tr.innerHTML = `
-        <td><div style="font-weight:600">${u.full_name}</div><div class="small">${u.username}</div></td>
-        <td>${branchNameFor(u.branch)}</td>
-        <td>${fmtMoney(summary.loaned)}</td>
-        <td>${fmtMoney(summary.repaid)}</td>
-        <td${balanceStyle}>${fmtMoney(summary.balance)}</td>
-        <td>${summary.transactions}</td>
-        <td><button class="btn ghost" onclick="loadAccount('${u.account_excel}','${u.username}');showTab('account');">Open</button></td>`;
-      rows.push(tr);
-    }
-    if(tableBody){
-      tableBody.innerHTML = '';
-      if(rows.length === 0){
-        const empty = document.createElement('tr');
-        empty.innerHTML = '<td colspan="7">No members found for this branch.</td>';
-        tableBody.appendChild(empty);
-      }else{
-        rows.forEach(row => tableBody.appendChild(row));
-      }
-    }
-    if(statsWrap){
-      const stats = [
-        {label:'Total disbursed', value: fmtMoney(totalLoaned)},
-        {label:'Total repaid', value: fmtMoney(totalRepaid)},
-        {label:'Outstanding balance', value: fmtMoney(totalBalance)},
-        {label:'Members in view', value: String(summaries.length)}
-      ];
-      stats.forEach(item => {
-        const statCard = document.createElement('div');
-        statCard.className = 'stat-card';
-        statCard.innerHTML = `<h4>${item.label}</h4><div class="stat-value">${item.value}</div>`;
-        statsWrap.appendChild(statCard);
-      });
     }
     renderAuditLog(branchId);
   }
-  function downloadPortfolioCsv(){
-    const summaries = Array.isArray(window._managerSummary) ? window._managerSummary : [];
-    if(summaries.length === 0){
-      alert('Open the manager dashboard first to load portfolio data.');
-      return;
-    }
-    const header = ['Member','Username','Branch','Total Loaned','Total Repaid','Balance','Transactions'];
-    const rows = summaries.map(entry => [
-      entry.user.full_name,
-      entry.user.username,
-      branchNameFor(entry.user.branch),
-      entry.summary ? entry.summary.loaned : 0,
-      entry.summary ? entry.summary.repaid : 0,
-      entry.summary ? entry.summary.balance : 0,
-      entry.summary ? entry.summary.transactions : 0
-    ]);
-    const csvLines = [header, ...rows].map(arr => arr.map(val => {
-      const str = typeof val === 'number' ? val.toFixed(2) : String(val);
-      return '"' + str.replace(/"/g,'""') + '"';
-    }).join(',')).join('\n');
-    const blob = new Blob([csvLines], {type:'text/csv;charset=utf-8;'});
-    const branchSelect = document.getElementById('branchFilter');
-    const branchId = branchSelect ? (branchSelect.value || 'all') : 'all';
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = `portfolio_${branchId}.csv`;
-    a.click();
-    URL.revokeObjectURL(a.href);
-    recordAudit({action:'portfolio_csv', branch: branchId || null});
-  }
+
   function handleReceiptUpload(input){
     const file = input.files[0];
     if(!file){ return; }
@@ -779,12 +659,8 @@
       const select = document.getElementById('branchFilter');
       if(select){
         const canSeeAll = (me.permissions||[]).includes('accounts:write');
-        if(canSeeAll){
-          const optAll = document.createElement('option');
-          optAll.value = '';
-          optAll.textContent = 'All branches';
-          select.appendChild(optAll);
-        }
+
+
         const options = (BRANCHES?.branches || []).filter(b => canSeeAll || b.id === me.branch);
         for(const b of options){
           const opt = document.createElement('option');
@@ -794,7 +670,9 @@
         }
         select.value = options[0]?.id || me.branch;
       }
-      await renderManagerView();
+
+      renderManagerView();
+
     }
   }
   window.renderManagerView = renderManagerView;
@@ -809,7 +687,7 @@
   window.handlePhoto = handlePhoto;
   window.showTab = showTab;
   window.logout = logout;
-  window.downloadPortfolioCsv = downloadPortfolioCsv;
+
   window.addEventListener('DOMContentLoaded', init);
   </script>
 
