@@ -1,0 +1,18 @@
+{
+  "branches": [
+    {
+      "id": "kalady",
+      "name": "Kalady Unit",
+      "address": "Kalady SNDP Sakha Office",
+      "manager": "manager",
+      "phone": "+91 98765 43210"
+    },
+    {
+      "id": "kochi",
+      "name": "Kochi Chapter",
+      "address": "Marine Drive, Kochi",
+      "manager": "kochi_mgr",
+      "phone": "+91 91234 50000"
+    }
+  ]
+}

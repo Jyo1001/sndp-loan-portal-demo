@@ -1,0 +1,35 @@
+{
+  "owner": "sample_member",
+  "branch": "template",
+  "generated": "2024-02-01",
+  "account": [
+    {
+      "Date": "2024-01-01",
+      "Description": "Loan sanctioned",
+      "Type": "Credit",
+      "Amount": 50000,
+      "Notes": "Template opening balance"
+    },
+    {
+      "Date": "2024-01-08",
+      "Description": "First repayment",
+      "Type": "Debit",
+      "Amount": -4000,
+      "Notes": "Enter details here"
+    },
+    {
+      "Date": "2024-01-15",
+      "Description": "Expense reimbursement",
+      "Type": "Credit",
+      "Amount": 1200,
+      "Notes": "Adjust as needed"
+    },
+    {
+      "Date": "2024-01-28",
+      "Description": "Second repayment",
+      "Type": "Debit",
+      "Amount": -4000,
+      "Notes": "Collect via UPI"
+    }
+  ]
+}
