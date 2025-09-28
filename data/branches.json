@@ -1,18 +1,81 @@
 {
   "branches": [
     {
-      "id": "kalady",
-      "name": "Kalady Unit",
-      "address": "Kalady SNDP Sakha Office",
+      "id": "hq",
+      "name": "State Coordination HQ",
+      "address": "SNDP State HQ, Thiruvananthapuram",
       "manager": "manager",
-      "phone": "+91 98765 43210"
+      "phone": "+91 98470 00001"
     },
     {
-      "id": "kochi",
-      "name": "Kochi Chapter",
-      "address": "Marine Drive, Kochi",
+      "id": "TVM-Kazhakuttom",
+      "name": "Kazhakuttom Chapter",
+      "address": "Kazhakuttom, Thiruvananthapuram, Kerala 695582",
+      "manager": "manager",
+      "phone": "+91 83629 50628"
+    },
+    {
+      "id": "EKM-Kaloor",
+      "name": "Kaloor Kochi Chapter",
+      "address": "Kaloor, Kochi, Kerala 682017",
       "manager": "kochi_mgr",
-      "phone": "+91 91234 50000"
+      "phone": "+91 73987 04996"
+    },
+    {
+      "id": "KLM-Kollam-Central",
+      "name": "Kollam Central Chapter",
+      "address": "Chinnakada, Kollam, Kerala 691001",
+      "manager": "manager",
+      "phone": "+91 74147 97776"
+    },
+    {
+      "id": "PKD-Palakkad-Town",
+      "name": "Palakkad Town Chapter",
+      "address": "Stadium Bypass, Palakkad, Kerala 678001",
+      "manager": "manager",
+      "phone": "+91 73866 65249"
+    },
+    {
+      "id": "KNR-Kannur-South",
+      "name": "Kannur South Chapter",
+      "address": "Thalassery Road, Kannur, Kerala 670002",
+      "manager": "manager",
+      "phone": "+91 81710 69472"
+    },
+    {
+      "id": "KTY-Kottayam-East",
+      "name": "Kottayam East Chapter",
+      "address": "Baker Junction, Kottayam, Kerala 686001",
+      "manager": "manager",
+      "phone": "+91 96470 99690"
+    },
+    {
+      "id": "MLP-Malappuram-City",
+      "name": "Malappuram City Chapter",
+      "address": "Up Hill, Malappuram, Kerala 676505",
+      "manager": "manager",
+      "phone": "+91 89252 76600"
+    },
+    {
+      "id": "TSR-Thrissur-Round",
+      "name": "Thrissur Round Chapter",
+      "address": "Swaraj Round, Thrissur, Kerala 680001",
+      "manager": "manager",
+      "phone": "+91 95014 86939"
+    },
+    {
+      "id": "ALP-Alappuzha-North",
+      "name": "Alappuzha North Chapter",
+      "address": "Vazhicherry, Alappuzha, Kerala 688001",
+      "manager": "manager",
+      "phone": "+91 79223 08461"
+    },
+    {
+      "id": "PTA-Pathanamthitta",
+      "name": "Pathanamthitta Chapter",
+      "address": "Adoor, Pathanamthitta, Kerala 691523",
+      "manager": "manager",
+      "phone": "+91 82299 27269"
     }
   ]
 }

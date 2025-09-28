@@ -1,0 +1,33 @@
+{
+  "owner": "fathima10",
+  "branch": "PTA-Pathanamthitta",
+  "generated": "2025-03-15T09:30:00+05:30",
+  "account": [
+    {"Date": "2024-09-20", "Description": "Loan disbursement", "Type": "Loan", "Amount": 45000.0, "Notes": "Initial micro-loan released"},
+    {"Date": "2024-09-30", "Description": "Processing fee", "Type": "Fee", "Amount": -500.0, "Notes": "Documentation and field verification"},
+    {"Date": "2024-10-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -3800.0, "Notes": "NEFT transfer"},
+    {"Date": "2024-10-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 610.5, "Notes": "Interest accrual"},
+    {"Date": "2024-11-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4000.0, "Notes": "Auto-debit from SNDP savings"},
+    {"Date": "2024-11-30", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 559.66, "Notes": "Interest accrual"},
+    {"Date": "2024-12-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4100.0, "Notes": "Branch counter payment"},
+    {"Date": "2024-12-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 506.55, "Notes": "Interest accrual"},
+    {"Date": "2025-01-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4200.0, "Notes": "NEFT transfer"},
+    {"Date": "2025-01-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 451.15, "Notes": "Interest accrual"},
+    {"Date": "2025-02-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4300.0, "Notes": "Auto-debit from SNDP savings"},
+    {"Date": "2025-02-28", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 393.42, "Notes": "Interest accrual"},
+    {"Date": "2025-03-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4350.0, "Notes": "UPI payment"},
+    {"Date": "2025-03-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 334.07, "Notes": "Interest accrual"},
+    {"Date": "2025-04-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4400.0, "Notes": "NEFT transfer"},
+    {"Date": "2025-04-30", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 273.08, "Notes": "Interest accrual"},
+    {"Date": "2025-05-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4500.0, "Notes": "Auto-debit from SNDP savings"},
+    {"Date": "2025-05-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 209.68, "Notes": "Interest accrual"},
+    {"Date": "2025-06-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4600.0, "Notes": "Branch counter payment"},
+    {"Date": "2025-06-30", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 143.82, "Notes": "Interest accrual"},
+    {"Date": "2025-07-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4700.0, "Notes": "NEFT transfer"},
+    {"Date": "2025-07-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 75.48, "Notes": "Interest accrual"},
+    {"Date": "2025-08-05", "Description": "Monthly repayment", "Type": "Repayment", "Amount": -4800.0, "Notes": "UPI payment"},
+    {"Date": "2025-08-31", "Description": "Monthly interest @ 1.5%", "Type": "Interest", "Amount": 4.61, "Notes": "Interest accrual"},
+    {"Date": "2025-09-05", "Description": "Final repayment", "Type": "Repayment", "Amount": -312.02, "Notes": "Loan closed"}
+  ],
+  "xlsx_base64": ""
+}
