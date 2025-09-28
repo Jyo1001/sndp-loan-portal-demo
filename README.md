@@ -26,7 +26,7 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 ## What's new in this build
 
 
-- Password reset flow with OTP delivery (displayed on-screen for the offline demo) and per-user password overrides stored locally.
+- Password reset flow with a local override stored in-browser (no OTP) and per-user password overrides stored locally.
 - Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
 - Automatic monthly interest projections (1% demo rate) plus PDF statement export for any month.
 - Receipt/attachment capture with mobile camera support; files live in local storage for evaluation.
@@ -107,7 +107,7 @@ Need a quick reference for the Excel structure? Click **Download sample Excel** 
 ## Roadmap ideas
 
 - Real backend APIs for authentication, profile/account persistence, and secure password resets.
-- Email/SMS delivery for OTP and notifications (replace the on-screen demo codes).
+- Email/SMS delivery for password reset notifications once a backend exists.
 - Server-side audit log retention with tamper resistance and export tooling.
 - Malayalam/English translation, INR formatting polish, and accessibility audits.
 - Workflow automation: monthly interest posting, delinquency alerts, and statement emails.

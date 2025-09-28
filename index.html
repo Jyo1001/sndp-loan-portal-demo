@@ -28,7 +28,7 @@
         <h1>Serve members with confidence.</h1>
         <p>Use the demo logins below to explore the dual experience — a welcoming public member view and a branch manager cockpit with a top-down view of every account.</p>
         <div class="pill-list">
-          <span class="pill">Password reset with OTP preview</span>
+          <span class="pill">Password reset override preview</span>
           <span class="pill">Branch intelligence dashboard</span>
           <span class="pill">Excel / PDF exports</span>
         </div>
@@ -139,7 +139,7 @@ Respond with:
         <ul class="small feature-list">
           <li>Branch-aware dashboard summarises total loaned, repayments, and outstanding balance for every member.</li>
           <li>Members can export Excel snapshots, fetch monthly PDF statements, and manage receipt attachments locally.</li>
-          <li>Password reset uses a time-bound OTP preview stored in your browser for this static prototype.</li>
+          <li>Password reset uses an in-browser override stored locally for this static prototype.</li>
           <li>All data loads from <code>data/*.json</code>, making the project Git-friendly and easy to extend.</li>
         </ul>
         <div class="card ghost" style="margin-top:12px">
@@ -158,6 +158,7 @@ Respond with:
         <h3 style="margin:0">Reset password</h3>
         <button class="btn ghost" type="button" onclick="closeReset()">Close</button>
       </div>
+
       <p class="small">Enter your username to receive a one-time password (OTP). For this offline demo the OTP is shown onscreen instead of being emailed.</p>
       <div class="grid two" style="grid-template-columns:1fr">
         <label>Username<input class="input" id="resetUser"/></label>
@@ -169,6 +170,7 @@ Respond with:
           <p id="otpStatus" class="small"></p>
         </div>
         <p id="otpHint" class="small"></p>
+
       </div>
     </div>
   </div>
@@ -218,9 +220,11 @@ Respond with:
     return USER_CACHE.data;
   }
 
+
   function getFormMessage(form){
     return form.querySelector('.form-message') || document.getElementById('loginMsg');
   }
+
 
   async function handleLogin(ev, expectedRole){
     ev.preventDefault();
@@ -287,6 +291,7 @@ Respond with:
   function closeReset(){
     document.getElementById('resetModal').classList.add('hidden');
     document.getElementById('resetUser').value = '';
+
     document.getElementById('otpArea').classList.add('hidden');
     document.getElementById('otpStatus').textContent = '';
     document.getElementById('otpHint').textContent = '';
@@ -307,9 +312,10 @@ Respond with:
   }
 
   async function submitReset(){
+
     const user = document.getElementById('resetUser').value.trim();
-    const otp = document.getElementById('otpInput').value.trim();
     const pass = document.getElementById('newPassword').value;
+
     const status = document.getElementById('otpStatus');
     if(!otp || !pass){ status.textContent = 'Enter OTP and new password'; return; }
     const stored = localStorage.getItem('otp_' + user);
@@ -321,8 +327,9 @@ Respond with:
     const hash = await sha256Hex(salt + pass);
     localStorage.setItem('override_' + user, JSON.stringify({salt, password_hash: hash}));
     localStorage.removeItem('otp_' + user);
+
     status.textContent = 'Password updated. You can now sign in.';
-    recordAudit({actor: user, action: 'password_reset', branch: null});
+    recordAudit({actor: user, action: 'password_reset_override', branch: rec.branch || null});
   }
 
   async function downloadSampleWorkbook(){
@@ -387,8 +394,10 @@ Respond with:
 
   window.openReset = openReset;
   window.closeReset = closeReset;
+
   window.sendOtp = sendOtp;
   window.submitReset = submitReset;
+
   window.downloadSampleWorkbook = downloadSampleWorkbook;
   window.copyPrompt = copyPrompt;
 
