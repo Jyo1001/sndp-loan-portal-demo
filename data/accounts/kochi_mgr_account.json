@@ -1,0 +1,42 @@
+{
+  "owner": "kochi_mgr",
+  "branch": "kochi",
+  "generated": "2024-02-01",
+  "account": [
+    {
+      "Date": "2024-01-04",
+      "Description": "Branch float",
+      "Type": "Credit",
+      "Amount": 80000,
+      "Notes": "Allocated from HQ"
+    },
+    {
+      "Date": "2024-01-08",
+      "Description": "Community training",
+      "Type": "Debit",
+      "Amount": -6500,
+      "Notes": "Hall rental and materials"
+    },
+    {
+      "Date": "2024-01-18",
+      "Description": "Loan disbursed",
+      "Type": "Debit",
+      "Amount": -30000,
+      "Notes": "Self-help group batch 12"
+    },
+    {
+      "Date": "2024-01-24",
+      "Description": "Loan recovery",
+      "Type": "Credit",
+      "Amount": 6000,
+      "Notes": "Batch 11 instalment"
+    },
+    {
+      "Date": "2024-01-30",
+      "Description": "Branch service fees",
+      "Type": "Credit",
+      "Amount": 1750,
+      "Notes": "New account setup"
+    }
+  ]
+}

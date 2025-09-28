@@ -1,0 +1,42 @@
+{
+  "owner": "mariya",
+  "branch": "kochi",
+  "generated": "2024-02-01",
+  "account": [
+    {
+      "Date": "2024-01-06",
+      "Description": "Loan disbursal",
+      "Type": "Credit",
+      "Amount": 45000,
+      "Notes": "Women's empowerment program"
+    },
+    {
+      "Date": "2024-01-13",
+      "Description": "Business supplies",
+      "Type": "Debit",
+      "Amount": -8000,
+      "Notes": "Textile stock purchase"
+    },
+    {
+      "Date": "2024-01-21",
+      "Description": "Weekly repayment",
+      "Type": "Debit",
+      "Amount": -2500,
+      "Notes": "UPI auto debit"
+    },
+    {
+      "Date": "2024-01-25",
+      "Description": "Branch incentive",
+      "Type": "Credit",
+      "Amount": 700,
+      "Notes": "On-time repayment bonus"
+    },
+    {
+      "Date": "2024-01-30",
+      "Description": "Group meeting refreshments",
+      "Type": "Debit",
+      "Amount": -400,
+      "Notes": "Filed receipt"
+    }
+  ]
+}

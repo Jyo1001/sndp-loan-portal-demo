@@ -1,0 +1,49 @@
+{
+  "owner": "manager",
+  "branch": "hq",
+  "generated": "2024-02-01",
+  "account": [
+    {
+      "Date": "2024-01-02",
+      "Description": "Opening deposit",
+      "Type": "Credit",
+      "Amount": 150000,
+      "Notes": "Seed capital for loan program"
+    },
+    {
+      "Date": "2024-01-05",
+      "Description": "Loan issued to branch fund",
+      "Type": "Debit",
+      "Amount": -40000,
+      "Notes": "Disbursed to Thrissur chapter"
+    },
+    {
+      "Date": "2024-01-09",
+      "Description": "Equipment purchase",
+      "Type": "Debit",
+      "Amount": -12000,
+      "Notes": "Laptops for field officers"
+    },
+    {
+      "Date": "2024-01-15",
+      "Description": "Branch repayment",
+      "Type": "Credit",
+      "Amount": 10000,
+      "Notes": "Thrissur monthly repayment"
+    },
+    {
+      "Date": "2024-01-27",
+      "Description": "Service fee income",
+      "Type": "Credit",
+      "Amount": 5500,
+      "Notes": "Processing charges"
+    },
+    {
+      "Date": "2024-01-31",
+      "Description": "Interest payout",
+      "Type": "Debit",
+      "Amount": -2500,
+      "Notes": "Interest credited to savings"
+    }
+  ]
+}
