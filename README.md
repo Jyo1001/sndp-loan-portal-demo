@@ -26,7 +26,9 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 ## What's new in this build
 
 
-- Streamlined member and manager sign-in cards that rely solely on standard credentials (no OTP prompts).
+
+- Password reset flow with a local override stored in-browser (no OTP) and per-user password overrides stored locally.
+
 - Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
 - Automatic monthly interest projections (1% demo rate) plus PDF statement export for any month.
 - Receipt/attachment capture with mobile camera support; files live in local storage for evaluation.
