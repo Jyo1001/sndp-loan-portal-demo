@@ -30,7 +30,9 @@
         <div class="pill-list">
 
 
+
           <span class="pill">Password reset override preview</span>
+
 
 
           <span class="pill">Branch intelligence dashboard</span>
@@ -46,10 +48,10 @@
         <h3>Member Login</h3>
         <p class="small">Members view their personal profile, upload receipts, and monitor their loan ledger.</p>
         <label>Username
-          <input class="input" name="username" id="memberUsername" autocomplete="username" required/>
+          <input class="input" name="username" id="memberUsername" autocomplete="username" required value="sanoj1"/>
         </label>
         <label>Password
-          <input class="input" name="password" type="password" autocomplete="current-password" required/>
+          <input class="input" name="password" type="password" autocomplete="current-password" required value="demo123"/>
         </label>
         <div class="form-actions">
           <button class="btn" type="submit">Sign in as Member</button>
@@ -62,10 +64,10 @@
         <h3>Manager Command Center</h3>
         <p class="small">Managers unlock branch-wide intelligence, audit logging, and rapid access to every account book.</p>
         <label>Username
-          <input class="input" name="username" id="managerUsername" autocomplete="username" required/>
+          <input class="input" name="username" id="managerUsername" autocomplete="username" required value="manager"/>
         </label>
         <label>Password
-          <input class="input" name="password" type="password" autocomplete="current-password" required/>
+          <input class="input" name="password" type="password" autocomplete="current-password" required value="demo123"/>
         </label>
         <div class="form-actions">
           <button class="btn" type="submit">Sign in as Manager</button>
@@ -124,9 +126,9 @@ Respond with:
         <p class="small">Use the demo accounts below to sign in. All verification happens in your browser.</p>
         <form id="loginForm">
           <label>Username</label>
-          <input class="input" id="username" autocomplete="username" required/>
+          <input class="input" id="username" autocomplete="username" required value="manager"/>
           <label>Password</label>
-          <input class="input" id="password" type="password" autocomplete="current-password" required/>
+          <input class="input" id="password" type="password" autocomplete="current-password" required value="demo123"/>
           <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn" type="submit">Sign in</button>
             <span id="loginMsg" class="small" style="flex:1 1 160px"></span>
@@ -142,7 +144,9 @@ Respond with:
           <li>Members can export Excel snapshots, fetch monthly PDF statements, and manage receipt attachments locally.</li>
 
 
+
           <li>Password reset uses an in-browser override stored locally for this static prototype.</li>
+
 
 
           <li>All data loads from <code>data/*.json</code>, making the project Git-friendly and easy to extend.</li>
@@ -156,6 +160,7 @@ Respond with:
 
     <footer>© SNDP Demo • Built for GitHub Pages • Featuring Sree Narayana Guru</footer>
   </main>
+
 
 
   <div id="resetModal" class="modal hidden">
@@ -182,6 +187,7 @@ Respond with:
   </div>
 
 
+
   <script>
   const USER_CACHE = {data: null};
 
@@ -202,6 +208,7 @@ Respond with:
       console.error('audit log failed', err);
     }
   }
+
 
 
 
@@ -237,6 +244,7 @@ Respond with:
 
 
 
+
   async function handleLogin(ev, expectedRole){
     ev.preventDefault();
     const form = ev.target;
@@ -265,6 +273,7 @@ Respond with:
 
 
 
+
       rec = applyPasswordOverride(rec);
 
       const hash = await sha256Hex(rec.salt + password);
@@ -272,6 +281,7 @@ Respond with:
         if(msg){ msg.textContent = 'Invalid password'; }
         return;
       }
+
 
 
       const session = {
@@ -290,6 +300,7 @@ Respond with:
       if(msg){ msg.textContent = 'Unable to load users'; }
     }
   }
+
 
 
 
@@ -351,6 +362,7 @@ Respond with:
 
 
 
+
   async function downloadSampleWorkbook(){
     try{
       const res = await fetch('data/accounts/sample_account.json');
@@ -404,9 +416,11 @@ Respond with:
     if(genericForm){ genericForm.addEventListener('submit', ev => handleLogin(ev, 'any')); }
 
 
+
     document.querySelectorAll('button[data-reset]').forEach(btn => {
       btn.addEventListener('click', () => openReset(btn.getAttribute('data-reset')));
     });
+
 
 
   }
@@ -417,11 +431,13 @@ Respond with:
 
 
 
+
   window.openReset = openReset;
   window.closeReset = closeReset;
 
   window.sendOtp = sendOtp;
   window.submitReset = submitReset;
+
 
 
   window.downloadSampleWorkbook = downloadSampleWorkbook;

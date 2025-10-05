@@ -27,7 +27,9 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 
 
 
+
 - Password reset flow with a local override stored in-browser (no OTP) and per-user password overrides stored locally.
+
 
 - Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
 - Automatic monthly interest projections (1% demo rate) plus PDF statement export for any month.
