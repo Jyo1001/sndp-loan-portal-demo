@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>SNDP Loan Portal — Login hub</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <meta name="color-scheme" content="dark light"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700&family=Inter:wght@400;600&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.19.3/dist/xlsx.full.min.js"></script>
+</head>
+<body class="login-page">
+  <header class="landing-header compact">
+    <div class="container header-inner">
+      <div>
+        <div class="title">SNDP Loan Portal</div>
+        <div class="sub">Secure browser-based access for members and managers</div>
+      </div>
+      <nav class="landing-nav">
+        <a href="index.html">Home</a>
+        <a href="README.html">Implementation guide</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container login-layout">
+    <aside class="login-side">
+      <div class="login-side__intro">
+        <span class="eyebrow">Login hub</span>
+        <h1>Choose your role to begin.</h1>
+        <p>This page retains every feature from the previous landing screen, now arranged for focused sign-ins and quick dataset generation.</p>
+      </div>
+      <div class="login-side__cards">
+        <div class="info-card">
+          <h3>Member quick start</h3>
+          <p class="small">Try <code>sanoj1 / demo123</code> or <code>reshma2 / demo123</code> to explore personal ledgers and receipt uploads.</p>
+        </div>
+        <div class="info-card">
+          <h3>Manager quick start</h3>
+          <p class="small">Use <code>manager / demo123</code> or <code>kochi_mgr / demo123</code> for branch intelligence and audit logs.</p>
+        </div>
+        <div class="info-card">
+          <h3>Need credentials?</h3>
+          <p class="small">All demo accounts live in <code>data/users.json</code>. Update them locally to create new logins.</p>
+        </div>
+      </div>
+    </aside>
+
+    <section class="login-main" aria-labelledby="member">
+      <div class="login-panels">
+        <form id="publicLoginForm" class="card glass login-card" aria-labelledby="member">
+          <h2 id="member">Member login</h2>
+          <p class="small">Members view their personal profile, upload receipts, and monitor their loan ledger.</p>
+          <label>Username
+            <input class="input" name="username" id="memberUsername" autocomplete="username" required value="sanoj1"/>
+          </label>
+          <label>Password
+            <input class="input" name="password" type="password" autocomplete="current-password" required value="demo123"/>
+          </label>
+          <div class="form-actions">
+            <button class="btn" type="submit">Sign in as member</button>
+            <button class="btn ghost" type="button" data-reset="memberUsername">Forgot password?</button>
+          </div>
+          <p class="form-message" id="memberMsg"></p>
+        </form>
+
+        <form id="managerLoginForm" class="card glass login-card" aria-labelledby="manager">
+          <h2 id="manager">Manager command center</h2>
+          <p class="small">Managers unlock branch-wide intelligence, audit logging, and rapid access to every account book.</p>
+          <label>Username
+            <input class="input" name="username" id="managerUsername" autocomplete="username" required value="manager"/>
+          </label>
+          <label>Password
+            <input class="input" name="password" type="password" autocomplete="current-password" required value="demo123"/>
+          </label>
+          <div class="form-actions">
+            <button class="btn" type="submit">Sign in as manager</button>
+            <button class="btn ghost" type="button" data-reset="managerUsername">Forgot password?</button>
+          </div>
+          <p class="form-message" id="managerMsg"></p>
+        </form>
+      </div>
+
+      <div class="card stack-card">
+        <h2>Universal demo login</h2>
+        <p class="small">Use any credential pair from <code>data/users.json</code>. All verification happens in your browser, with optional password overrides stored locally.</p>
+        <form id="loginForm">
+          <label>Username
+            <input class="input" id="username" autocomplete="username" required value="manager"/>
+          </label>
+          <label>Password
+            <input class="input" id="password" type="password" autocomplete="current-password" required value="demo123"/>
+          </label>
+          <div class="form-actions">
+            <button class="btn" type="submit">Sign in</button>
+            <span id="loginMsg" class="small"></span>
+          </div>
+        </form>
+      </div>
+
+      <div id="promptCard" class="card glass stack-card">
+        <h2>AI prompt — generate 10 demo members &amp; Excel books</h2>
+        <p class="small">Copy the text below into ChatGPT-5 or another AI assistant. The response will include ten fictional members, JSON account books, and base64-encoded Excel files.</p>
+        <textarea id="aiPrompt" class="prompt-box" rows="12" readonly>
+You are ChatGPT-5 acting as a dataset generator for the "SNDP Loan Portal" GitHub Pages demo.
+
+Produce TEN fictional SNDP micro-loan members spread across multiple Kerala branches. For each member:
+1. Output a JSON object that matches data/users.json with fields:
+   - username (lowercase, unique)
+   - role = "member"
+   - branch (existing or new chapter id)
+   - permissions = ["profile:read","profile:update","accounts:read"]
+   - full_name, dob (YYYY-MM-DD), address, phone, email, photo = "data/profile_photos/jyo.svg"
+   - account_excel = "data/accounts/<username>_account.json"
+   - salt and password_hash for the password "demo123" using SHA-256(salt+password) with random 16-char hex salt.
+2. Output a companion JSON file named data/accounts/<username>_account.json with fields {"owner","branch","generated", "account": [ ... ]}.
+   - Include 18–24 ledger rows over the last 12 months with columns Date (YYYY-MM-DD), Description, Type (Loan, Repayment, Interest, Fee), Amount (positive for disbursements, negative for repayments), Notes.
+3. Create an Excel workbook for each member with a sheet "Account" matching the JSON rows, plus a Balance column that cumulatively sums Amount. Return each workbook as base64 for a binary .xlsx file under a key xlsx_base64 inside the account JSON response.
+
+Respond with:
+{
+  "users": [ ... ten user objects ... ],
+  "accounts": {
+     "<username>_account.json": {
+        "owner": "...",
+        "branch": "...",
+        "generated": "ISO timestamp",
+        "account": [...rows...],
+        "xlsx_base64": "base64 encoded .xlsx file for this member"
+     },
+     ... nine more ...
+  }
+}
+        </textarea>
+        <div class="prompt-actions">
+          <button class="btn" type="button" onclick="copyPrompt()">Copy prompt</button>
+          <button class="btn ghost" type="button" onclick="downloadSampleWorkbook()">Download sample Excel</button>
+          <span id="promptMsg" class="small"></span>
+        </div>
+      </div>
+
+      <div class="card stack-card">
+        <h2>How the demo works</h2>
+        <ul class="small feature-list">
+          <li>Branch-aware dashboard summarises total loaned, repayments, and outstanding balance for every member.</li>
+          <li>Members can export Excel snapshots, fetch monthly PDF statements, and manage receipt attachments locally.</li>
+          <li>Password reset uses an in-browser override stored locally for this static prototype.</li>
+          <li>All data loads from <code>data/*.json</code>, making the project Git-friendly and easy to extend.</li>
+        </ul>
+        <div class="info-card ghost">
+          <div class="small">Need more guidance?</div>
+          <a class="btn" href="README.html">Open the onboarding guide</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="landing-footer">© SNDP Demo • Client-side only • For evaluation purposes</footer>
+
+  <div id="resetModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+    <div class="modal-panel">
+      <div class="modal-head">
+        <h2 id="resetTitle">Reset password</h2>
+        <button class="btn ghost" type="button" onclick="closeReset()">Close</button>
+      </div>
+      <p class="small">Enter your username to receive a one-time password (OTP). For this offline demo the OTP is shown onscreen instead of being emailed.</p>
+      <div class="grid single">
+        <label>Username<input class="input" id="resetUser"/></label>
+        <button class="btn" type="button" onclick="sendOtp()">Send OTP</button>
+        <div id="otpArea" class="hidden">
+          <label>Enter OTP<input class="input" id="otpInput"/></label>
+          <label>New password<input class="input" id="newPassword" type="password"/></label>
+          <button class="btn" type="button" onclick="submitReset()">Update password</button>
+          <p id="otpStatus" class="small"></p>
+        </div>
+        <p id="otpHint" class="small"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="scripts/auth.js"></script>
+</body>
+</html>
