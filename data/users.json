@@ -189,6 +189,45 @@
       "account_excel": "data/accounts/fathima10_account.json",
       "salt": "89c516664499969f",
       "password_hash": "2bfa97a01dc58f20421c6bd51aa4a8e59402904b6bf00ce02d17f66e09b81a4c"
+    },
+    {
+      "username": "manager",
+      "role": "manager",
+      "branch": "hq",
+      "permissions": [
+        "profile:read",
+        "profile:update",
+        "accounts:read",
+        "accounts:write",
+        "audit:read"
+      ],
+      "full_name": "State Operations Manager",
+      "dob": "1975-05-12",
+      "address": "SNDP State HQ, Thiruvananthapuram, Kerala",
+      "phone": "+91 98470 00001",
+      "email": "manager@sndp.demo",
+      "photo": "data/profile_photos/manager.svg",
+      "account_excel": "data/accounts/manager_account.json",
+      "salt": "252f3c167f0b7097",
+      "password_hash": "56e09039e7b9ee7919f19f9f4cf61d38af4782e684056e9eec84e2efc3d53a0d"
+    },
+    {
+      "username": "kochi_mgr",
+      "role": "manager",
+      "branch": "EKM-Kaloor",
+      "permissions": [
+        "profile:read",
+        "accounts:read"
+      ],
+      "full_name": "Kochi Branch Manager",
+      "dob": "1982-11-03",
+      "address": "Kaloor, Kochi, Kerala 682017",
+      "phone": "+91 98950 65432",
+      "email": "kochi_mgr@sndp.demo",
+      "photo": "data/profile_photos/manager.svg",
+      "account_excel": "data/accounts/kochi_mgr_account.json",
+      "salt": "f7a3ca2d5eedf974",
+      "password_hash": "e2eaa2a46c0798b5a4580da59e032fb966fb823429c280e1d5d446d4ae5220d1"
     }
   ]
 }
