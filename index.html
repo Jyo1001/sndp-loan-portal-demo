@@ -28,7 +28,9 @@
         <h1>Serve members with confidence.</h1>
         <p>Use the demo logins below to explore the dual experience — a welcoming public member view and a branch manager cockpit with a top-down view of every account.</p>
         <div class="pill-list">
+
           <span class="pill">Password reset override preview</span>
+
           <span class="pill">Branch intelligence dashboard</span>
           <span class="pill">Excel / PDF exports</span>
         </div>
@@ -49,7 +51,6 @@
         </label>
         <div class="form-actions">
           <button class="btn" type="submit">Sign in as Member</button>
-          <button class="btn ghost" type="button" data-reset="memberUsername">Forgot password?</button>
         </div>
         <p class="form-message" id="memberMsg"></p>
         <div class="small">Try <code>sanoj1 / demo123</code> or <code>reshma2 / demo123</code>.</div>
@@ -66,7 +67,6 @@
         </label>
         <div class="form-actions">
           <button class="btn" type="submit">Sign in as Manager</button>
-          <button class="btn ghost" type="button" data-reset="managerUsername">Forgot password?</button>
         </div>
         <p class="form-message" id="managerMsg"></p>
         <div class="small">Try <code>manager / demo123</code> or <code>kochi_mgr / demo123</code>.</div>
@@ -127,7 +127,6 @@ Respond with:
           <input class="input" id="password" type="password" autocomplete="current-password" required/>
           <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
             <button class="btn" type="submit">Sign in</button>
-            <button class="btn ghost" type="button" onclick="openReset()">Forgot password?</button>
             <span id="loginMsg" class="small" style="flex:1 1 160px"></span>
           </div>
         </form>
@@ -139,7 +138,9 @@ Respond with:
         <ul class="small feature-list">
           <li>Branch-aware dashboard summarises total loaned, repayments, and outstanding balance for every member.</li>
           <li>Members can export Excel snapshots, fetch monthly PDF statements, and manage receipt attachments locally.</li>
+
           <li>Password reset uses an in-browser override stored locally for this static prototype.</li>
+
           <li>All data loads from <code>data/*.json</code>, making the project Git-friendly and easy to extend.</li>
         </ul>
         <div class="card ghost" style="margin-top:12px">
@@ -151,6 +152,7 @@ Respond with:
 
     <footer>© SNDP Demo • Built for GitHub Pages • Featuring Sree Narayana Guru</footer>
   </main>
+
 
   <div id="resetModal" class="modal hidden">
     <div class="modal-panel">
@@ -196,6 +198,7 @@ Respond with:
     }
   }
 
+
   function applyPasswordOverride(rec){
     try{
       const override = JSON.parse(localStorage.getItem('override_' + rec.username) || 'null');
@@ -226,6 +229,7 @@ Respond with:
   }
 
 
+
   async function handleLogin(ev, expectedRole){
     ev.preventDefault();
     const form = ev.target;
@@ -252,7 +256,9 @@ Respond with:
         return;
       }
 
+
       rec = applyPasswordOverride(rec);
+
       const hash = await sha256Hex(rec.salt + password);
       if(hash !== rec.password_hash){
         if(msg){ msg.textContent = 'Invalid password'; }
@@ -275,6 +281,7 @@ Respond with:
       if(msg){ msg.textContent = 'Unable to load users'; }
     }
   }
+
 
   function openReset(prefillId){
     if(prefillId){
@@ -332,6 +339,7 @@ Respond with:
     recordAudit({actor: user, action: 'password_reset_override', branch: rec.branch || null});
   }
 
+
   async function downloadSampleWorkbook(){
     try{
       const res = await fetch('data/accounts/sample_account.json');
@@ -383,14 +391,17 @@ Respond with:
     if(managerForm){ managerForm.addEventListener('submit', ev => handleLogin(ev, 'manager')); }
     const genericForm = document.getElementById('loginForm');
     if(genericForm){ genericForm.addEventListener('submit', ev => handleLogin(ev, 'any')); }
+
     document.querySelectorAll('button[data-reset]').forEach(btn => {
       btn.addEventListener('click', () => openReset(btn.getAttribute('data-reset')));
     });
+
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     initLoginPanels();
   });
+
 
   window.openReset = openReset;
   window.closeReset = closeReset;
