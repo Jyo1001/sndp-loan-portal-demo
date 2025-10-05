@@ -30,7 +30,7 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 - Branch intelligence dashboard with per-account cards, aggregate KPIs, and a one-click CSV export for portfolio oversight.
 - Copy/paste AI prompt (ChatGPT-5 ready) that asks for ten demo members, JSON account books, and base64 `.xlsx` payloads.
 - Sample Excel generator that turns `data/accounts/sample_account.json` into a downloadable workbook for quick inspection.
-- Existing goodies — OTP reset preview, attachments, interest projections, PDF statements, audit log — refreshed to play nicely with the new routing.
+- Streamlined authentication experience with no OTP prompts—just the member and manager logins plus refreshed audit logging.
 
 ---
 
@@ -106,7 +106,7 @@ Need a quick reference for the Excel structure? Click **Download sample Excel** 
 ## Roadmap ideas
 
 - Real backend APIs for authentication, profile/account persistence, and secure password resets.
-- Email/SMS delivery for OTP and notifications (replace the on-screen demo codes).
+- Email/SMS delivery for password reset notifications once a backend exists.
 - Server-side audit log retention with tamper resistance and export tooling.
 - Malayalam/English translation, INR formatting polish, and accessibility audits.
 - Workflow automation: monthly interest posting, delinquency alerts, and statement emails.
