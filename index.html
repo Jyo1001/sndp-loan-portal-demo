@@ -28,7 +28,9 @@
         <h1>Serve members with confidence.</h1>
         <p>Use the demo logins below to explore the dual experience — a welcoming public member view and a branch manager cockpit with a top-down view of every account.</p>
         <div class="pill-list">
-          <span class="pill">Role-aware authentication</span>
+
+          <span class="pill">Password reset override preview</span>
+
           <span class="pill">Branch intelligence dashboard</span>
           <span class="pill">Excel / PDF exports</span>
         </div>
@@ -136,7 +138,9 @@ Respond with:
         <ul class="small feature-list">
           <li>Branch-aware dashboard summarises total loaned, repayments, and outstanding balance for every member.</li>
           <li>Members can export Excel snapshots, fetch monthly PDF statements, and manage receipt attachments locally.</li>
-          <li>Authentication happens entirely in-browser for this static prototype.</li>
+
+          <li>Password reset uses an in-browser override stored locally for this static prototype.</li>
+
           <li>All data loads from <code>data/*.json</code>, making the project Git-friendly and easy to extend.</li>
         </ul>
         <div class="card ghost" style="margin-top:12px">
@@ -148,6 +152,30 @@ Respond with:
 
     <footer>© SNDP Demo • Built for GitHub Pages • Featuring Sree Narayana Guru</footer>
   </main>
+
+
+  <div id="resetModal" class="modal hidden">
+    <div class="modal-panel">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+        <h3 style="margin:0">Reset password</h3>
+        <button class="btn ghost" type="button" onclick="closeReset()">Close</button>
+      </div>
+
+      <p class="small">Enter your username to receive a one-time password (OTP). For this offline demo the OTP is shown onscreen instead of being emailed.</p>
+      <div class="grid two" style="grid-template-columns:1fr">
+        <label>Username<input class="input" id="resetUser"/></label>
+        <button class="btn" type="button" onclick="sendOtp()">Send OTP</button>
+        <div id="otpArea" class="hidden">
+          <label>Enter OTP<input class="input" id="otpInput"/></label>
+          <label>New password<input class="input" id="newPassword" type="password"/></label>
+          <button class="btn" type="button" onclick="submitReset()">Update password</button>
+          <p id="otpStatus" class="small"></p>
+        </div>
+        <p id="otpHint" class="small"></p>
+
+      </div>
+    </div>
+  </div>
 
   <script>
   const USER_CACHE = {data: null};
@@ -170,6 +198,19 @@ Respond with:
     }
   }
 
+
+  function applyPasswordOverride(rec){
+    try{
+      const override = JSON.parse(localStorage.getItem('override_' + rec.username) || 'null');
+      if(override && override.password_hash && override.salt){
+        return {...rec, salt: override.salt, password_hash: override.password_hash};
+      }
+    }catch(err){
+      console.warn('override parse failed', err);
+    }
+    return rec;
+  }
+
   async function loadUsers(){
     if(USER_CACHE.data){
       return USER_CACHE.data;
@@ -182,9 +223,12 @@ Respond with:
     return USER_CACHE.data;
   }
 
+
   function getFormMessage(form){
     return form.querySelector('.form-message') || document.getElementById('loginMsg');
   }
+
+
 
   async function handleLogin(ev, expectedRole){
     ev.preventDefault();
@@ -212,6 +256,9 @@ Respond with:
         return;
       }
 
+
+      rec = applyPasswordOverride(rec);
+
       const hash = await sha256Hex(rec.salt + password);
       if(hash !== rec.password_hash){
         if(msg){ msg.textContent = 'Invalid password'; }
@@ -234,6 +281,64 @@ Respond with:
       if(msg){ msg.textContent = 'Unable to load users'; }
     }
   }
+
+
+  function openReset(prefillId){
+    if(prefillId){
+      const field = document.getElementById(prefillId);
+      if(field){
+        const value = field.value || field.getAttribute('placeholder') || '';
+        document.getElementById('resetUser').value = value;
+      }
+    }
+    document.getElementById('resetModal').classList.remove('hidden');
+    document.getElementById('resetUser').focus();
+  }
+
+  function closeReset(){
+    document.getElementById('resetModal').classList.add('hidden');
+    document.getElementById('resetUser').value = '';
+
+    document.getElementById('otpArea').classList.add('hidden');
+    document.getElementById('otpStatus').textContent = '';
+    document.getElementById('otpHint').textContent = '';
+  }
+
+  async function sendOtp(){
+    const user = document.getElementById('resetUser').value.trim();
+    if(!user){ alert('Enter username'); return; }
+    const db = await loadUsers();
+    const rec = db.users.find(x => x.username === user);
+    if(!rec){ alert('User not found'); return; }
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+    localStorage.setItem('otp_' + user, JSON.stringify({code, expires: Date.now() + 10 * 60 * 1000}));
+    document.getElementById('otpArea').classList.remove('hidden');
+    document.getElementById('otpStatus').textContent = '';
+    document.getElementById('otpHint').textContent = `OTP for demo purposes: ${code}`;
+    recordAudit({actor: user, action: 'otp_sent', branch: rec.branch || null});
+  }
+
+  async function submitReset(){
+
+    const user = document.getElementById('resetUser').value.trim();
+    const pass = document.getElementById('newPassword').value;
+
+    const status = document.getElementById('otpStatus');
+    if(!otp || !pass){ status.textContent = 'Enter OTP and new password'; return; }
+    const stored = localStorage.getItem('otp_' + user);
+    if(!stored){ status.textContent = 'No OTP found, request again.'; return; }
+    const rec = JSON.parse(stored);
+    if(Date.now() > rec.expires){ status.textContent = 'OTP expired. Request a new one.'; return; }
+    if(rec.code !== otp){ status.textContent = 'Incorrect OTP.'; return; }
+    const salt = Array.from(crypto.getRandomValues(new Uint8Array(8))).map(b => b.toString(16).padStart(2, '0')).join('');
+    const hash = await sha256Hex(salt + pass);
+    localStorage.setItem('override_' + user, JSON.stringify({salt, password_hash: hash}));
+    localStorage.removeItem('otp_' + user);
+
+    status.textContent = 'Password updated. You can now sign in.';
+    recordAudit({actor: user, action: 'password_reset_override', branch: rec.branch || null});
+  }
+
 
   async function downloadSampleWorkbook(){
     try{
@@ -286,11 +391,23 @@ Respond with:
     if(managerForm){ managerForm.addEventListener('submit', ev => handleLogin(ev, 'manager')); }
     const genericForm = document.getElementById('loginForm');
     if(genericForm){ genericForm.addEventListener('submit', ev => handleLogin(ev, 'any')); }
+
+    document.querySelectorAll('button[data-reset]').forEach(btn => {
+      btn.addEventListener('click', () => openReset(btn.getAttribute('data-reset')));
+    });
+
   }
 
   document.addEventListener('DOMContentLoaded', () => {
     initLoginPanels();
   });
+
+
+  window.openReset = openReset;
+  window.closeReset = closeReset;
+
+  window.sendOtp = sendOtp;
+  window.submitReset = submitReset;
 
   window.downloadSampleWorkbook = downloadSampleWorkbook;
   window.copyPrompt = copyPrompt;
