@@ -29,7 +29,9 @@
         <p>Use the demo logins below to explore the dual experience — a welcoming public member view and a branch manager cockpit with a top-down view of every account.</p>
         <div class="pill-list">
 
+
           <span class="pill">Password reset override preview</span>
+
 
           <span class="pill">Branch intelligence dashboard</span>
           <span class="pill">Excel / PDF exports</span>
@@ -139,7 +141,9 @@ Respond with:
           <li>Branch-aware dashboard summarises total loaned, repayments, and outstanding balance for every member.</li>
           <li>Members can export Excel snapshots, fetch monthly PDF statements, and manage receipt attachments locally.</li>
 
+
           <li>Password reset uses an in-browser override stored locally for this static prototype.</li>
+
 
           <li>All data loads from <code>data/*.json</code>, making the project Git-friendly and easy to extend.</li>
         </ul>
@@ -177,6 +181,7 @@ Respond with:
     </div>
   </div>
 
+
   <script>
   const USER_CACHE = {data: null};
 
@@ -197,6 +202,7 @@ Respond with:
       console.error('audit log failed', err);
     }
   }
+
 
 
   function applyPasswordOverride(rec){
@@ -230,6 +236,7 @@ Respond with:
 
 
 
+
   async function handleLogin(ev, expectedRole){
     ev.preventDefault();
     const form = ev.target;
@@ -257,6 +264,7 @@ Respond with:
       }
 
 
+
       rec = applyPasswordOverride(rec);
 
       const hash = await sha256Hex(rec.salt + password);
@@ -264,6 +272,7 @@ Respond with:
         if(msg){ msg.textContent = 'Invalid password'; }
         return;
       }
+
 
       const session = {
         username: rec.username,
@@ -281,6 +290,7 @@ Respond with:
       if(msg){ msg.textContent = 'Unable to load users'; }
     }
   }
+
 
 
   function openReset(prefillId){
@@ -340,6 +350,7 @@ Respond with:
   }
 
 
+
   async function downloadSampleWorkbook(){
     try{
       const res = await fetch('data/accounts/sample_account.json');
@@ -392,9 +403,11 @@ Respond with:
     const genericForm = document.getElementById('loginForm');
     if(genericForm){ genericForm.addEventListener('submit', ev => handleLogin(ev, 'any')); }
 
+
     document.querySelectorAll('button[data-reset]').forEach(btn => {
       btn.addEventListener('click', () => openReset(btn.getAttribute('data-reset')));
     });
+
 
   }
 
@@ -403,11 +416,13 @@ Respond with:
   });
 
 
+
   window.openReset = openReset;
   window.closeReset = closeReset;
 
   window.sendOtp = sendOtp;
   window.submitReset = submitReset;
+
 
   window.downloadSampleWorkbook = downloadSampleWorkbook;
   window.copyPrompt = copyPrompt;

@@ -26,14 +26,15 @@ Logins are verified **in the browser** using salted SHA‑256 (still not secure 
 ## What's new in this build
 
 
+
 - Password reset flow with a local override stored in-browser (no OTP) and per-user password overrides stored locally.
+
 - Role-aware dashboard that surfaces branch tags, branch filtering and an audit log for managers.
 - Automatic monthly interest projections (1% demo rate) plus PDF statement export for any month.
 - Receipt/attachment capture with mobile camera support; files live in local storage for evaluation.
 - Multi-branch data model (`data/branches.json`) with per-branch account books and managers.
-- Fresh JSON account datasets for each demo user plus a reusable `sample_account.json` you can clone for new members. The UI gene
-rates downloadable `.zip` files containing Excel workbooks on demand.
-- Local audit log viewer showing logins, exports, password resets, and document actions.
+- Fresh JSON account datasets for each demo user plus a reusable `sample_account.json` you can clone for new members. The UI generates downloadable `.zip` files containing Excel workbooks on demand.
+- Local audit log viewer showing logins, exports, and document actions.
 
 
 ---
